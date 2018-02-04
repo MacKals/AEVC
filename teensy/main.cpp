@@ -1,3 +1,10 @@
+/*
+
+AEVC Code for Teensy platform for interfacing with stepper motors and other
+perepherals.
+
+*/
+
 #include "core/WProgram.h"
 #include "core/kinetis.h"
 
