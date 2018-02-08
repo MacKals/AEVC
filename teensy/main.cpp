@@ -9,25 +9,15 @@ perepherals.
 #include "core/kinetis.h"
 
 #include "constants.h"
+#include "EventHandler.h"
+#include "Stepper.h"
 
-volatile uint32_t ftm0_cnt_long;
-
-// Printing variables
-uint32_t printStartTime;
-uint32_t printDuration;
+volatile uint32_t ftm0_cnt_long; // counter
 
 uint32_t now() {
     return ftm0_cnt_long + FTM0_CNT;
 }
 
-uint32_t interruptTime;
-void callAfterDelay(void (* foo)(void), int delay) {
-    interruptTime = now() + delay*1000;
-    long deltaT = interruptTime - now();
-    if (deltaT < 0 && deltaT < uint32_t(0xFFFF)*1000) {
-
-    }
-}
 
 bool ledValue = false;
 
@@ -36,37 +26,23 @@ void ftm0_isr(void) {
 
     // Counter overflow
 	if (FTM0_SC & 0x80) {
-		ftm0_cnt_long += 0x10000; // Increment long counter
+		ftm0_cnt_long++;  // Increment long counter
 		FTM0_SC &= ~0x80; // Reset flag
 
-        if (ftm0_cnt_long%1000 == 0) {
+        if (ftm0_cnt_long%100000 == 0) {
             ledValue = !ledValue;
-            digitalWrite(LED, ledValue);
-
-            // Adjust calibrationStartTime to account for timer overflow.
+            digitalWriteFast(LED, ledValue);
         }
+
+        EventHandler::increment();
 	}
 
     // Falling edge interrupt
-	if (FTM0_STATUS & 0x20) {
+	//if (FTM0_STATUS & 0x20) {
 		// Read values and prepare FTM0 for new capture
-		uint32_t rise = FTM0_C4V;
-		uint32_t fall = FTM0_C5V;
-		FTM0_STATUS = 0;
-
-		// Calculate when the events occurred
-		uint32_t pulse_time, pulse_width;
-		if (rise < fall) {
-			// All in one FTM0 counter cycle
-			pulse_time  = ftm0_cnt_long + rise;
-			pulse_width = fall - rise;
-		} else {
-			// The FTM0 counter overflowed in the middle of the captured pulse
-			pulse_time  = ftm0_cnt_long + rise - 0x10000;
-			pulse_width = 0xFFFF - rise + fall;
-		}
-
-    }
+	//	uint32_t rise = FTM0_C4V;
+	//uint32_t fall = FTM0_C5V;
+	//	FTM0_STATUS = 0;
 }
 
 int main(void) {
@@ -95,7 +71,7 @@ int main(void) {
 	PORTD_PCR4 = 0x0400; // PD4 alternative 4
 
 	FTM0_CNTIN = 0x00; // Set counter to 0
-	FTM0_MOD = 0xFFFF; // Set to free running mode
+	FTM0_MOD = US_TO_CLOCK(10); // Free running mode 0xFFFF =
 	FTM0_MODE=0x05; // Set FTMEN bit
 
 	FTM0_C4SC = 0x14; // Capture rising edge - and continuous capture - on channel 4

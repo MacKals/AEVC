@@ -13,14 +13,13 @@
 #include "core/WProgram.h"
 
 #define PRINTING false
-#define MAX_PRINT_DURATION 0x8FFFFFFF
-
 
 // Timing
 #define US_TO_CLOCK(us) ((us)*72/2)
 
 #define PERIOD 300000           // US_TO_CLOCK(1000000/120)
 #define PERIODS_PER_CLOCK 3579  // 0x100000000/(PERIOD*5) truncated
+
 
 // Teensy pinout
 

@@ -6,38 +6,45 @@
 //
 //
 
+
+// Max STP pulse seperation 2 to 4 us.
+
+
 #ifndef stepper_hpp
 #define stepper_hpp
 
-#include <stdio.h>
+#include "core/Arduino.h"
 
 class Stepper {
 private:
-    const int8_t DIR;
-    const int8_t STEP;
-    const int8_t EN;
-    const int8_t CHOP;
 
-    const int8_t RX;
-    const int8_t TX;
+    const uint8_t DIR;
+    const uint8_t STEP;
+    const uint8_t EN;
+    const uint8_t CHOP;
 
-    const bool constrained;
+    const uint8_t RX;
+    const uint8_t TX;
 
     const bool reversePositive; //to normalize "forward" for all motors
 
+    bool currentStep = false;
 
-    bool stp = false;
-    bool pos = true;
-
+    float targetVelocity = 0;
+    float currentVelocity = 0;
 
 public:
-    Stepper(int d, int s, int e, int c, int r, int t, bool constrained, bool reverse = false):
-        DIR(d), STEP(s), EN(e), CHOP(c), RX(r), TX(t), constrained(constrained), reversePositive(reverse) {};
 
-    //~Stepper();
+    Stepper(int d, int s, int e, int c, int r, int t, bool reverse = false):
+        DIR(d), STEP(s), EN(e), CHOP(c), RX(r), TX(t), reversePositive(reverse) {};
 
-    void step(int direction, int speed);
-    void stepFor(int distance, int direction, int speed);
+    void step();
+
+    void forward();
+    void backward();
+
+    void enable();
+    void disable();
 
 
 protected:
