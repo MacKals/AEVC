@@ -10,9 +10,12 @@ perepherals.
 
 #include "constants.h"
 #include "EventHandler.hpp"
-#include "Stepper.hpp"
 
 volatile uint32_t ftm0_cnt_long; // counter
+
+volatile EventHandler eventHandler = EventHandler();
+
+
 
 uint32_t now() {
     return ftm0_cnt_long + FTM0_CNT;
@@ -34,7 +37,7 @@ void ftm0_isr(void) {
             digitalWriteFast(LED, ledValue);
         }
 
-        EventHandler::increment();
+        EventHandler::step();
 	}
 
     // Falling edge interrupt
@@ -99,11 +102,6 @@ int main(void) {
 	GPIOC_PSOR  = 0x00C0; // Turn on
 
     pinMode(LED, OUTPUT);
-
-
-    Stepper rightMotor = Stepper(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX);
-
-    Stepper leftMotor = Stepper(M3_DIR, M3_STEP, M3_EN, M3_CHOP, M3_TX, M3_RX);
 
     // Main execution loop
 	while (1) {
