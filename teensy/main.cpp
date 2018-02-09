@@ -9,8 +9,8 @@ perepherals.
 #include "core/kinetis.h"
 
 #include "constants.h"
-#include "EventHandler.h"
-#include "Stepper.h"
+#include "EventHandler.hpp"
+#include "Stepper.hpp"
 
 volatile uint32_t ftm0_cnt_long; // counter
 
@@ -100,14 +100,10 @@ int main(void) {
 
     pinMode(LED, OUTPUT);
 
-    // Initiate button-read for claibration
-    bool buttonLastPressed = false;
 
-    int printIndex = 0;
+    Stepper rightMotor = Stepper(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX);
 
-    int k = 0;
-
-    Serial.println("works");
+    Stepper leftMotor = Stepper(M3_DIR, M3_STEP, M3_EN, M3_CHOP, M3_TX, M3_RX);
 
     // Main execution loop
 	while (1) {

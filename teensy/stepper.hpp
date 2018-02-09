@@ -23,8 +23,8 @@ private:
     const uint8_t EN;
     const uint8_t CHOP;
 
-    const uint8_t RX;
     const uint8_t TX;
+    const uint8_t RX;
 
     const bool reversePositive; //to normalize "forward" for all motors
 
@@ -35,8 +35,8 @@ private:
 
 public:
 
-    Stepper(int d, int s, int e, int c, int r, int t, bool reverse = false):
-        DIR(d), STEP(s), EN(e), CHOP(c), RX(r), TX(t), reversePositive(reverse) {};
+    Stepper(int d, int s, int e, int c,  int t, int r, bool reverse = false):
+        DIR(d), STEP(s), EN(e), CHOP(c), TX(t), RX(r), reversePositive(reverse) {};
 
     void step();
 
