@@ -5,39 +5,83 @@ perepherals.
 
 */
 
-#include "core/WProgram.h"
-#include "core/kinetis.h"
+#include "core/Arduino.h"
 
 #include "constants.h"
-#include "EventHandler.hpp"
+#include "Stepper.hpp"
 
-volatile uint32_t ftm0_cnt_long; // counter
+volatile uint32_t time; // ftm0_cnt_long
 
-volatile EventHandler eventHandler = EventHandler();
+bool ledValue = false;
+bool stepping = false;
 
+// Link hardware
 
+DrivetrainStepper rightMotor = DrivetrainStepper(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX);
+DrivetrainStepper leftMotor = DrivetrainStepper(M3_DIR, M3_STEP, M3_EN, M3_CHOP, M3_TX, M3_RX);
 
-uint32_t now() {
-    return ftm0_cnt_long + FTM0_CNT;
+//Stepper turnMotor = Stepper(M4_DIR, M4_STEP, M4_EN, M4_CHOP, M4_TX, M4_RX);
+//Stepper heightMotor = Stepper(M5_DIR, M5_STEP, M5_EN, M5_CHOP, M5_TX, M5_RX);
+
+void step() {
+    rightMotor.step(&time);
+    leftMotor.step(&time);
 }
 
 
-bool ledValue = false;
+const String popArgument(String &in) {
+    if (in.length() < 2) return NULL;
+    for (int i = 1; i < in.length(); i++) {
+        if (in.charAt(i) == ' ') {
+            if (in.length()-1 > i) in = "";
+            in = in.substring(i+1, in.length()-1);
+            return in.substring(0, i-1);
+        }
+    }
+}
+
+bool executeCommand(String s) {
+
+    String command, arg1, arg2;
+
+    command = popArgument(s);
+    arg1 = popArgument(s);
+    arg2 = popArgument(s);
+
+    if (command == "MF") {
+        int distance = arg1.toFloat();
+        leftMotor.setRelativeTarget(distance);
+        rightMotor.setRelativeTarget(distance);
+    } else
+
+    if (command == "S") {
+        int distance = arg1.toFloat() * WHEELBASE_RADIUS;
+        leftMotor.setRelativeTarget(-distance);
+        rightMotor.setRelativeTarget(distance);
+    } else
+
+    {
+        return false;
+    }
+
+
+    return true;
+}
 
 // Interrupt service routines
 void ftm0_isr(void) {
 
     // Counter overflow
 	if (FTM0_SC & 0x80) {
-		ftm0_cnt_long++;  // Increment long counter
+		time++;  // Increment long counter
 		FTM0_SC &= ~0x80; // Reset flag
 
-        if (ftm0_cnt_long%100000 == 0) {
+        if (!time%100000) {
             ledValue = !ledValue;
             digitalWriteFast(LED, ledValue);
         }
 
-        EventHandler::step();
+        if (stepping) step();
 	}
 
     // Falling edge interrupt
@@ -74,7 +118,7 @@ int main(void) {
 	PORTD_PCR4 = 0x0400; // PD4 alternative 4
 
 	FTM0_CNTIN = 0x00; // Set counter to 0
-	FTM0_MOD = US_TO_CLOCK(10); // Free running mode 0xFFFF =
+	FTM0_MOD = US_TO_CLOCK(STEP_INTERRUPT_PERIOD); // Free running mode 0xFFFF
 	FTM0_MODE=0x05; // Set FTMEN bit
 
 	FTM0_C4SC = 0x14; // Capture rising edge - and continuous capture - on channel 4
@@ -84,7 +128,7 @@ int main(void) {
 	FTM0_STATUS = 0x00; // Clear any old interrupts
 	NVIC_ENABLE_IRQ(IRQ_FTM0); // Enable interrupts for FTM0
 
-	ftm0_cnt_long = 0; // We can count to 32-bits if we do it manually
+	time = 0; // We can count to 32-bits if we do it manually
 	FTM0_SC |= 0x40; // Interrupt on overflow
 
 	FTM0_SC |= 0x08; // Set FTM0 clock to system clock
@@ -106,6 +150,24 @@ int main(void) {
     // Main execution loop
 	while (1) {
 
+        if (Serial.available()) {
+            String a;
+            while (Serial.available()) {
+                a += Serial.readString();
+                if (a.length() << 4) {
+                    String last = a.substring(a.length()-2, a.length()-1);
+                    if (last == "\r\n") {
+                        bool understood = executeCommand(a.substring(0, a.length()-2));
+                        Serial.write(understood);
+                        a = "";
+                    }
+                }
+            }
+
+        }
+
+        rightMotor.updateStepPeriod();
+        leftMotor.updateStepPeriod();
     }
 
 	return 0;
