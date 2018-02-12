@@ -14,24 +14,31 @@
 
 #define PRINTING false
 
+
+// Drivetrain
+#define DISTANCE_PER_STEP 0.001570796327  // m, 1.8deg * PI/180 * 5cm
+#define WHEELBASE_RADIUS  0.27630/2       // m
+
+#define MAX_VELOCITY      1.0             // m/s
+#define MAX_ACCELERATION  0.1             // m/s^2
+
+
 // Timing
 #define US_TO_CLOCK(us) ((us)*72/2)
 
 #define PERIOD 300000           // US_TO_CLOCK(1000000/120)
 #define PERIODS_PER_CLOCK 3579  // 0x100000000/(PERIOD*5) truncated
 
-#define STEP_INTERRUPT_PERIOD 10            // in us
-#define MICROSECONDS 1000000 // to s
-// Drivetrain
+#define STEP_INTERRUPT_PERIOD   100      // us
+#define MICROSECOND             1000000  // s
+#define INTERRUPT_FREQUENCY     (MICROSECOND/STEP_INTERRUPT_PERIOD)    // Hz
+#define DELTA_V                 (MAX_ACCELERATION/INTERRUPT_FREQUENCY) // m/s
+#define DELTA_SV                (DELTA_V/DISTANCE_PER_STEP)            // step/s
+
+#define BLINK_PERIOD 500000 //us
 
 
-#define DISTANCE_PER_STEP 0.001570796327 // 1.8deg * PI/180 * 5cm
-#define MAX_VELOCITY 0.5
-#define MIN_STEP_PERIOD MAX_VELOCITY/DISTANCE_PER_STEP // in miltiples of interrput interval (eg 10us)
 
-#define MAX_ACCELERATION 0.1 // m/s^2
-
-#define WHEELBASE_RADIUS 0.27630 //mm
 
 // Teensy pinout
 

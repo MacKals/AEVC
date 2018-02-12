@@ -17,20 +17,24 @@ void Stepper::step() {
 
 void Stepper::forward() {
     digitalWriteFast(DIR, reversePositive);
-    currentStep = !currentStep;
 }
 
 void Stepper::backward() {
     digitalWriteFast(DIR, !reversePositive);
-    currentStep = !currentStep;
 }
 
 void Stepper::enable() {
-    digitalWriteFast(EN, true);
-    currentStep = !currentStep;
+    digitalWriteFast(EN, false);
 }
 
 void Stepper::disable() {
-    digitalWriteFast(EN, false);
-    currentStep = !currentStep;
+    digitalWriteFast(EN, true);
+}
+
+void Stepper::chopOn() {
+    digitalWriteFast(CHOP, false);
+}
+
+void Stepper::chopOff() {
+    digitalWriteFast(CHOP, true);
 }
