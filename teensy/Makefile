@@ -1,10 +1,10 @@
 # MCU type for Teensy 3.2
-MCU = MK20DX256
-MCU_LD = core/mk20dx256.ld
+#MCU = MK20DX256
+#MCU_LD = core/mk20dx256.ld
 
 # MCU type for Teensy 3.6
-#MCU = MK66FX1M0
-#MCU_LD = core/mk66fx1m0.ld
+MCU = MK66FX1M0
+MCU_LD = core/mk66fx1m0.ld
 
 # The name of your project (used to name the compiled .hex file)
 TARGET = main

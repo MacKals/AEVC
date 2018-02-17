@@ -16,7 +16,7 @@
 
 
 // Drivetrain
-#define DISTANCE_PER_STEP 0.001570796327  // m, 1.8deg * PI/180 * 5cm
+#define DISTANCE_PER_STEP 0.0005235987757  // m, 1.8deg * PI/180 * 5cm
 #define WHEELBASE_RADIUS  0.27630/2       // m
 
 #define MAX_VELOCITY      1.0             // m/s
@@ -34,6 +34,7 @@
 #define INTERRUPT_FREQUENCY     (MICROSECOND/STEP_INTERRUPT_PERIOD)    // Hz
 #define DELTA_V                 (MAX_ACCELERATION/INTERRUPT_FREQUENCY) // m/s
 #define DELTA_SV                (DELTA_V/DISTANCE_PER_STEP)            // step/s
+#define MAX_STEP_PERIOD         0.1*INTERRUPT_FREQUENCY               // step periods
 
 #define BLINK_PERIOD 500000 //us
 

@@ -52,22 +52,19 @@ public:
     void chopOn();
     void chopOff();
 
-// prot
+//prot
     volatile float currentStepVelocity = 0; // steps per second
 
     // Period between steps at current velocity
     // Given in multiples of interrupt period
     const uint32_t currentStepPeriod() {
-        return (float) INTERRUPT_FREQUENCY / (float) currentStepVelocity;
+        return abs((float) INTERRUPT_FREQUENCY / (float) currentStepVelocity / 2.0);
     }
 
 
 protected:
-
     bool stepping = false;
     bool movingForward = true;
-
-
 };
 
 class DrivetrainStepper : public Stepper {
@@ -75,103 +72,37 @@ private:
     int32_t currentStepCount = 0;
     int32_t targetStepCount = 0;
 
+    int32_t stepCounter = 0; // to determine moved distance
+
 public:
 
-    DrivetrainStepper(int d, int s, int e, int c,  int t, int r, bool reverse = false) : Stepper(d, s, e, c, t, r, reverse) {};
+    DrivetrainStepper(int d, int s, int e, int c,  int t, int r, bool reverse = false):
+        Stepper(d, s, e, c, t, r, reverse) {};
 
+    const double currentVelocity();    // Given velocity of stepper
 
-    // Given velocity of stepper
-    const double currentVelocity() {
-        return currentStepVelocity * DISTANCE_PER_STEP;
-    }
+    void updateStepDirection();
+    void setRelativeTarget(float distance);
+    void setAbsoluteTarget(float distance);
 
-    void updateStepDirection() {
-        if (currentStepCount < targetStepCount) {
-            movingForward = true;
-            forward();
-        } else {
-            movingForward = false;
-            backward();
-        }
-    }
-
-    void setRelativeTarget(float distance) {
-        targetStepCount += distance / DISTANCE_PER_STEP;
-        updateStepDirection();
-        stepping = true;
-    }
-
-    void setAbsoluteTarget(float distance) {
-        targetStepCount = distance / DISTANCE_PER_STEP;
-        updateStepDirection();
-        stepping = true;
-    }
-
-    void step(volatile uint32_t* time) {
-
-        if (!stepping) return;
-
-        // step with indicated frequency
-        if (*time % currentStepPeriod() == 0) {
-
-            // no more steps to take
-            if (currentStepCount == targetStepCount) {
-                stepping = false;
-                currentStepVelocity = 0;
-                Serial.print("MF done");
-                return;
-            }
-
-            this->Stepper::step();
-            currentStepCount += movingForward ? 1 : -1;
-        }
-
-    }
-
-    void updateStepPeriod() {
-
-        int moveSteps = targetStepCount-currentStepCount;
-
-        if (moveSteps) {
-
-            // Serial.print("moveSteps: ");
-            // Serial.print(moveSteps);
-            // Serial.print(", targetAcceleration: ");
-
-            double moveDistance = moveSteps * DISTANCE_PER_STEP;
-
-            // v^2 = u^2 + 2as
-            // a = u^2/(2s)
-            double targetAcceleration = pow(currentVelocity(), 2) / (2 * moveDistance);
-
-            // Serial.print(targetAcceleration);
-            // Serial.print(", currentStepVelocity: ");
-
-            if (abs(targetAcceleration) < MAX_ACCELERATION) {
-                if (abs(currentVelocity()) < MAX_VELOCITY) {
-                    int negative = movingForward ? 1 : -1;
-                    currentStepVelocity += DELTA_SV * negative;
-                }
-            } else if (abs(targetAcceleration) > MAX_ACCELERATION) {
-                int negative = movingForward ? 1 : -1;
-                    currentStepVelocity -= DELTA_SV * negative;
-            }
-
-            // Serial.print(currentVelocity());
-            // Serial.print(", Period: ");
-            // Serial.println(currentStepPeriod());
-
-        }
-    }
+    void step();     // Should be called every interrupt period
+    void updateStepPeriod();
 };
 
-// class ArmStepper : Stepper {
-//
-// }
-//
-// class TurnStepper : Stepper {
-//
-//
-// }
+
+class EndstopStepper : Stepper {
+private:
+    const uint_8 ENDSTOP_PIN;
+
+public:
+    EndstopStepper(int d, int s, int e, int c, int t, int r, int pin, bool reverse = false):
+        ENDSTOP_PIN(pin) {
+            Stepper(d, s, e, c, t, r, reverse);
+            pinMode(ENDSTOP_PIN, INPUT_PULLUP);
+    };
+
+    
+
+};
 
 #endif /* stepper_hpp */

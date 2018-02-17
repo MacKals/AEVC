@@ -17,15 +17,15 @@ bool stepping = false;
 
 // Link hardware
 
-DrivetrainStepper rightMotor = DrivetrainStepper(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX);
+DrivetrainStepper rightMotor = DrivetrainStepper(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX, true);
 DrivetrainStepper leftMotor = DrivetrainStepper(M3_DIR, M3_STEP, M3_EN, M3_CHOP, M3_TX, M3_RX);
 
 Stepper turnMotor = Stepper(M4_DIR, M4_STEP, M4_EN, M4_CHOP, M4_TX, M4_RX);
 Stepper heightMotor = Stepper(M5_DIR, M5_STEP, M5_EN, M5_CHOP, M5_TX, M5_RX);
 
 void step() {
-    rightMotor.step(&time);
-    leftMotor.step(&time);
+    rightMotor.step();
+    leftMotor.step();
 }
 
 
@@ -53,12 +53,12 @@ bool executeCommand(String s) {
     arg1 = popArgument(s);
     arg2 = popArgument(s);
 
-    Serial.print(command);
-    Serial.print(", ");
-    Serial.print(arg1);
-    Serial.print(", ");
-    Serial.print(arg2);
-    Serial.print("; ");
+    // Serial.print(command);
+    // Serial.print(", ");
+    // Serial.print(arg1);
+    // Serial.print(", ");
+    // Serial.print(arg2);
+    // Serial.print("; ");
 
     if (command == "EN") {
         leftMotor.enable();
@@ -71,17 +71,21 @@ bool executeCommand(String s) {
     } else
 
     if (command == "MF") {
-        float distance = arg1.toFloat();
 
-        Serial.print("distance: ");
-        Serial.println(distance);
+        leftMotor.enable();
+        rightMotor.enable();
+
+        float distance = arg1.toFloat()/1000.0;
+
+        // Serial.print("distance: ");
+        // Serial.println(distance);
 
         leftMotor.setRelativeTarget(distance);
         rightMotor.setRelativeTarget(distance);
     } else
 
     if (command == "S") {
-        int distance = arg1.toFloat() * WHEELBASE_RADIUS;
+        int distance = arg1.toFloat()/1000.0 * WHEELBASE_RADIUS;
         leftMotor.setRelativeTarget(-distance);
         rightMotor.setRelativeTarget(distance);
     } else
@@ -116,9 +120,7 @@ void ftm0_isr(void) {
         if (time%(BLINK_PERIOD/STEP_INTERRUPT_PERIOD) == 0) {
             ledValue = !ledValue;
             digitalWriteFast(LED, ledValue);
-            Serial.println(rightMotor.currentVelocity());
-            Serial.println(rightMotor.currentStepPeriod());
-
+            // Serial.println(rightMotor.currentVelocity());
         }
 
         step();
@@ -135,7 +137,7 @@ void ftm0_isr(void) {
 }
 
 int main(void) {
-	Serial.begin(115200);
+	Serial.begin(9600);
 	delay(1000);
 
 	/* --- Setup the analog comparator (CMP1) --- */
@@ -192,18 +194,15 @@ int main(void) {
     leftMotor.disable();
     rightMotor.disable();
 
-    Serial.println(DELTA_V,  10);
-    Serial.println(INTERRUPT_FREQUENCY);
-    Serial.println(DISTANCE_PER_STEP, 10);
-
 
     // Main execution loop
 	while (1) {
 
         if (Serial.available()) {
+            Serial.println("c");
             String a = Serial.readString();
             Serial.print(a + ": \t");
-            if (a.length() < 2) Serial.println("Command too short.");
+            if (a.length() < 2) {}//Serial.println("Command too short.");
             else {
                 bool understood = executeCommand(a);
                 Serial.println(understood ? "Y" : "N");
