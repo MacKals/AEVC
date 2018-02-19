@@ -17,28 +17,33 @@
 #include "constants.h"
 
 class Stepper {
+
+public:
+    struct Pin {
+        const uint8_t DIR;
+        const uint8_t STEP;
+        const uint8_t EN;
+        const uint8_t CHOP;
+
+        const uint8_t TX;
+        const uint8_t RX;
+
+        Pin(uint8_t d, uint8_t s, uint8_t e, uint8_t c, uint8_t t, uint8_t r):
+            DIR(d), STEP(s), EN(e), CHOP(c), TX(t), RX(r) {}
+    };
+
 private:
-
-    const uint8_t DIR;
-    const uint8_t STEP;
-    const uint8_t EN;
-    const uint8_t CHOP;
-
-    const uint8_t TX;
-    const uint8_t RX;
-
+    const Pin pin;
     const bool reversePositive; //to normalize "forward" for all motors
-
     bool currentStep = false;
 
 public:
-
-    Stepper(int d, int s, int e, int c,  int t, int r, bool reverse = false):
-        DIR(d), STEP(s), EN(e), CHOP(c), TX(t), RX(r), reversePositive(reverse) {
-            pinMode(DIR, OUTPUT);
-            pinMode(STEP, OUTPUT);
-            pinMode(EN, OUTPUT);
-            pinMode(CHOP, OUTPUT);
+    Stepper(Pin pin, bool reverse = false):
+        pin(pin), reversePositive(reverse) {
+            pinMode(pin.DIR, OUTPUT);
+            pinMode(pin.STEP, OUTPUT);
+            pinMode(pin.EN, OUTPUT);
+            pinMode(pin.CHOP, OUTPUT);
         };
 
     void step();
@@ -52,35 +57,11 @@ public:
     void chopOn();
     void chopOff();
 
-
-
-
-
-
-
-
-protected:
-    float lastStepVelocity = 0;     // steps per second
-    float currentStepVelocity = 0;  // steps per second
-
-    float directionSign() {
-        return currentStepVelocity/abs(currentStepVelocity);
-    }
-
-    /**
-     * Computes the current step period.
-     * @return Period between steps at current velocity, given in multiples of interrupt period
-     */
-    const uint32_t currentStepPeriod() {
-        return abs((float) INTERRUPT_FREQUENCY / (float) currentStepVelocity / 2.0);
-    }
-
-    bool stepping = false;
 };
 
 
-class DrivetrainStepper : public Stepper {
-private:
+class MotionStepper : public Stepper {
+protected:
     int32_t currentStepCount = 0;
     int32_t targetStepCount = 0;
 
@@ -90,8 +71,23 @@ private:
 
 public:
 
-    DrivetrainStepper(int d, int s, int e, int c,  int t, int r, bool reverse = false):
-        Stepper(d, s, e, c, t, r, reverse) {};
+    // Operational constants
+    struct Parameter {
+        const float DISTANCE_PER_STEP;
+        const float MAX_ACCELERATION;
+        const float MAX_VELOCITY;
+        float DELTA_SV;
+
+        Parameter(float dps, float ma, float mv):
+            DISTANCE_PER_STEP(dps), MAX_ACCELERATION(ma), MAX_VELOCITY(mv) {
+
+                float DELTA_V = MAX_ACCELERATION/INTERRUPT_FREQUENCY; // m/s
+                DELTA_SV = DELTA_V / DISTANCE_PER_STEP;               // step/s
+            }
+    };
+
+    MotionStepper(Parameter param, Pin pin, bool reverse = false):
+        Stepper(pin, reverse), param(param) {};
 
     const double currentVelocity();    // Given velocity of stepper
 
@@ -100,28 +96,50 @@ public:
     void setAbsoluteTarget(float distance);
 
     void step();     // Should be called every interrupt period
+
+
+protected:
+    const Parameter param;
+
+    bool stepping = false;
+
+    float lastStepVelocity = 0;     // steps per second
+    float currentStepVelocity = 0;  // steps per second
+
+    /**
+     * Computes the current step period.
+     * @return Period between steps at current velocity, given in multiples of interrupt period
+     */
+    const uint32_t currentStepPeriod() {
+        return abs((float) INTERRUPT_FREQUENCY / (float) currentStepVelocity / 2.0);
+    }
+
+    float directionSign() {
+        return currentStepVelocity/abs(currentStepVelocity);
+    }
 };
 
 
-class EndstopStepper : Stepper {
+class EndstopStepper : MotionStepper {
 private:
     const uint8_t ENDSTOP_PIN;
     const uint32_t RANGE;
 
 public:
-    EndstopStepper(int d, int s, int e, int c, int t, int r, int pin, int range, float max_vel, float max_acel, bool reverse = false):
-        Stepper(d, s, e, c, t, r, reverse), ENDSTOP_PIN(pin), RANGE(range) {
+
+    EndstopStepper(Parameter param, Pin pin, int endstopPin, int range, bool reverse = false):
+        MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), RANGE(range) {
             pinMode(ENDSTOP_PIN, INPUT_PULLUP);
     };
 
     // set target position for stepper, returns false if position is invalid
-    bool setRelativeTarget(float num);
-    bool setAbsoluteTarget(float num);
+    bool setRelativeTarget(float distance);
+    bool setAbsoluteTarget(float distance);
 
     void step();     // Should be called every interrupt period
-    void updateStepPeriod();
 
     bool endstopInactive();
+    void endstopHit();
 };
 
 #endif /* stepper_hpp */

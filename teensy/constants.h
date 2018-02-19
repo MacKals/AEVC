@@ -16,21 +16,28 @@
 
 
 // Drivetrain
-#define DISTANCE_PER_STEP 0.0005235987757  // m, 1.8deg * PI/180 * 5cm
-#define WHEELBASE_RADIUS  0.27630/2       // m
+#define D_DISTANCE_PER_STEP 0.0005235987757  // m, 1.8deg * PI/180 * 5cm
+#define WHEELBASE_RADIUS    0.27630/2       // m
 
-#define MAX_VELOCITY      1.0             // m/s
-#define MAX_ACCELERATION  0.1             // m/s^2
+#define D_MAX_VEL   1.0             // m/s
+#define D_MAX_ACEL  0.1             // m/s^2
 
 // HeightMotor
-#define HM_RANGE 100 // TODO: determine value
-#define HM_MAX_ACEL 1.0
-#define HM_MAX_VEL 1.0
+#define H_DISTANCE_PER_STEP 1
+#define H_MAX_ACEL 1.0
+#define H_MAX_VEL 1.0
+
+#define H_STOP_PIN S2_2
+#define H_RANGE 100
 
 // TurnMotor
-#define TM_RANGE 100 // TODO: determine value
-#define TM_MAX_ACEL 1
-#define TM_MAX_VEL 1
+#define T_DISTANCE_PER_STEP 2
+#define T_MAX_ACEL 1
+#define T_MAX_VEL 1
+
+#define T_STOP_PIN S2_1
+#define T_RANGE 100
+
 
 // Timing
 #define US_TO_CLOCK(us) ((us)*72/2)
@@ -41,12 +48,9 @@
 #define STEP_INTERRUPT_PERIOD   100      // us
 #define MICROSECOND             1000000  // s
 #define INTERRUPT_FREQUENCY     (MICROSECOND/STEP_INTERRUPT_PERIOD)    // Hz
-#define DELTA_V                 (MAX_ACCELERATION/INTERRUPT_FREQUENCY) // m/s
-#define DELTA_SV                (DELTA_V/DISTANCE_PER_STEP)            // step/s
 #define MAX_STEP_PERIOD         0.1*INTERRUPT_FREQUENCY               // step periods
 
 #define BLINK_PERIOD 500000 //us
-
 
 
 
