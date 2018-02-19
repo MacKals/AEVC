@@ -11,7 +11,7 @@
 // 1 is logically on for motor, 0 logically off.
 
 
-// Stepper
+/* Stepper */
 
 void Stepper::step() {
     digitalWriteFast(STEP, currentStep);
@@ -43,22 +43,23 @@ void Stepper::chopOff() {
 }
 
 
-// DrivetrainStepper
+/* DrivetrainStepper */
 
 // Given velocity of stepper
 const double DrivetrainStepper::currentVelocity() {
     return currentStepVelocity * DISTANCE_PER_STEP;
 }
 
-void DrivetrainStepper::updateStepDirection() {
-    if (currentStepCount < targetStepCount) {
-        movingForward = true;
-        forward();
-    } else {
-        movingForward = false;
-        backward();
-    }
-}
+// // TODO: what if we allready have velity in the other direction?
+// void DrivetrainStepper::updateStepDirection() {
+//     if (currentStepCount < targetStepCount) {
+//         movingForward = true;
+//         forward();
+//     } else {
+//         movingForward = false;
+//         backward();
+//     }
+// }
 
 void DrivetrainStepper::setRelativeTarget(float distance) {
     targetStepCount += distance / DISTANCE_PER_STEP;
@@ -82,50 +83,73 @@ void DrivetrainStepper::step() {
 
         stepCounter = min(currentStepPeriod(), MAX_STEP_PERIOD);
 
-        // no more steps to take
+        // No more steps to take
         if (currentStepCount == targetStepCount) {
             stepping = false;
-            currentStepVelocity = 0;
+            currentStepVelocity = 0.0;
             return;
         }
 
         this->Stepper::step();
-        currentStepCount += movingForward ? 1 : -1;
+        currentStepCount += directionSign();
+
+        updateStepPeriod();
     }
 }
 
 void DrivetrainStepper::updateStepPeriod() {
 
-    int moveSteps = targetStepCount-currentStepCount;
+    const int moveSteps = targetStepCount-currentStepCount;
 
     if (moveSteps) {
+        const double moveDistance = moveSteps * DISTANCE_PER_STEP;
+        const double targetAcceleration = pow(currentVelocity(), 2) / (2 * moveDistance); // v^2 = u^2 + 2as, so a = u^2/(2s)
 
-        // Serial.print("moveSteps: ");
-        // Serial.print(moveSteps);
-        // Serial.print(", targetAcceleration: ");
-
-        double moveDistance = moveSteps * DISTANCE_PER_STEP;
-
-        // v^2 = u^2 + 2as
-        // a = u^2/(2s)
-        double targetAcceleration = pow(currentVelocity(), 2) / (2 * moveDistance);
-
-        // Serial.print(targetAcceleration);
-        // Serial.print(", currentStepVelocity: ");
+        lastStepVelocity = currentStepVelocity;
 
         if (abs(targetAcceleration) < MAX_ACCELERATION) {
             if (abs(currentVelocity()) < MAX_VELOCITY) {
-                int negative = movingForward ? 1 : -1;
-                currentStepVelocity += DELTA_SV * negative;
+                currentStepVelocity += DELTA_SV * directionSign();
             }
         } else if (abs(targetAcceleration) > MAX_ACCELERATION) {
-            int negative = movingForward ? 1 : -1;
-                currentStepVelocity -= DELTA_SV * negative;
+            currentStepVelocity -= DELTA_SV * directionSign();
         }
 
-        // Serial.print(currentVelocity());
-        // Serial.print(", Period: ");
-        // Serial.println(currentStepPeriod());
+        // Ensure DIR pin is set as we pass zero velocity
+        const int floatZero = 1.0/MAX_STEP_PERIOD;
+        if (lastStepVelocity >= floatZero && currentStepVelocity < 0.0) {
+            backward();
+        } else if (lastStepVelocity <= floatZero && currentStepVelocity > 0.0) {
+            forward();
+        }
+    }
+
+
+    /* EndstopStepper */
+
+    // set target position for stepper, returns false if position is invalid
+    bool EndstopStepper::setRelativeTarget(float num) {
 
     }
+
+    bool EndstopStepper::setAbsoluteTarget(float num) {
+
+    }
+
+    void EndstopStepper::step() {
+
+    }
+
+    void EndstopStepper::updateStepPeriod() {
+
+    }
+
+    bool EndstopStepper::endstopActive() {
+        if (!digitalReadFast(ENDSTOP_PIN)) return true;
+
+        //TODO: what if the endstop is depressed?
+
+        return false;
+    }
+
 }

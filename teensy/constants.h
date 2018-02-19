@@ -22,6 +22,15 @@
 #define MAX_VELOCITY      1.0             // m/s
 #define MAX_ACCELERATION  0.1             // m/s^2
 
+// HeightMotor
+#define HM_RANGE 100 // TODO: determine value
+#define HM_MAX_ACEL 1.0
+#define HM_MAX_VEL 1.0
+
+// TurnMotor
+#define TM_RANGE 100 // TODO: determine value
+#define TM_MAX_ACEL 1
+#define TM_MAX_VEL 1
 
 // Timing
 #define US_TO_CLOCK(us) ((us)*72/2)

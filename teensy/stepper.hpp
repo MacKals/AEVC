@@ -52,20 +52,32 @@ public:
     void chopOn();
     void chopOff();
 
-//prot
-    volatile float currentStepVelocity = 0; // steps per second
 
-    // Period between steps at current velocity
-    // Given in multiples of interrupt period
+
+
+
+
+
+
+protected:
+    float lastStepVelocity = 0;     // steps per second
+    float currentStepVelocity = 0;  // steps per second
+
+    float directionSign() {
+        return currentStepVelocity/abs(currentStepVelocity);
+    }
+
+    /**
+     * Computes the current step period.
+     * @return Period between steps at current velocity, given in multiples of interrupt period
+     */
     const uint32_t currentStepPeriod() {
         return abs((float) INTERRUPT_FREQUENCY / (float) currentStepVelocity / 2.0);
     }
 
-
-protected:
     bool stepping = false;
-    bool movingForward = true;
 };
+
 
 class DrivetrainStepper : public Stepper {
 private:
@@ -73,6 +85,8 @@ private:
     int32_t targetStepCount = 0;
 
     int32_t stepCounter = 0; // to determine moved distance
+
+    void updateStepPeriod();
 
 public:
 
@@ -86,23 +100,28 @@ public:
     void setAbsoluteTarget(float distance);
 
     void step();     // Should be called every interrupt period
-    void updateStepPeriod();
 };
 
 
 class EndstopStepper : Stepper {
 private:
-    const uint_8 ENDSTOP_PIN;
+    const uint8_t ENDSTOP_PIN;
+    const uint32_t RANGE;
 
 public:
-    EndstopStepper(int d, int s, int e, int c, int t, int r, int pin, bool reverse = false):
-        ENDSTOP_PIN(pin) {
-            Stepper(d, s, e, c, t, r, reverse);
+    EndstopStepper(int d, int s, int e, int c, int t, int r, int pin, int range, float max_vel, float max_acel, bool reverse = false):
+        Stepper(d, s, e, c, t, r, reverse), ENDSTOP_PIN(pin), RANGE(range) {
             pinMode(ENDSTOP_PIN, INPUT_PULLUP);
     };
 
-    
+    // set target position for stepper, returns false if position is invalid
+    bool setRelativeTarget(float num);
+    bool setAbsoluteTarget(float num);
 
+    void step();     // Should be called every interrupt period
+    void updateStepPeriod();
+
+    bool endstopInactive();
 };
 
 #endif /* stepper_hpp */
