@@ -10,11 +10,6 @@
 #ifndef constants_h
 #define constants_h
 
-#include "core/WProgram.h"
-
-#define PRINTING false
-
-
 // Drivetrain
 #define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm
 #define D_MAX_VEL   1.0                     // m/s

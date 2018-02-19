@@ -120,15 +120,15 @@ protected:
 };
 
 
-class EndstopStepper : MotionStepper {
+class EndstopStepper : public MotionStepper {
 private:
     const uint8_t ENDSTOP_PIN;
     const uint32_t RANGE;
 
 public:
 
-    EndstopStepper(Parameter param, Pin pin, int endstopPin, int range, bool reverse = false):
-        MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), RANGE(range) {
+    EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, bool reverse = false):
+        MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), RANGE(range/param.DISTANCE_PER_STEP) {
             pinMode(ENDSTOP_PIN, INPUT_PULLUP);
     };
 
