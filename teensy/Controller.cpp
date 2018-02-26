@@ -97,11 +97,11 @@ bool Controller::executeCommand(String s) {
     } else
 
     if (command == "HA") {
-
+        heightMotor.home();
     } else
 
     if (command == "HT") {
-        turnMotor.
+        turnMotor.home();
     } else
 
     {
