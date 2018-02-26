@@ -41,45 +41,68 @@ bool Controller::executeCommand(String s) {
     // Serial.print("; ");
 
     if (command == "EN") {
-        leftMotor.enable();
-        rightMotor.enable();
+        enableMotors();
     } else
 
     if (command == "DI") {
-        leftMotor.disable();
-        rightMotor.disable();
+        disableMotors();
     } else
 
     if (command == "MF") {
-
-        leftMotor.enable();
-        rightMotor.enable();
-
         float distance = arg1.toFloat()/1000.0;
-
-        // Serial.print("distance: ");
-        // Serial.println(distance);
-
         leftMotor.setRelativeTarget(distance);
         rightMotor.setRelativeTarget(distance);
     } else
 
     if (command == "S") {
-        int distance = arg1.toFloat()/1000.0 * WHEELBASE_RADIUS;
+        float distance = arg1.toFloat()/180.0 * PI * WHEELBASE_RADIUS;
         leftMotor.setRelativeTarget(-distance);
         rightMotor.setRelativeTarget(distance);
+    } else
+
+    if (command == "A") {
+        float height = arg1.toFloat()/1000.0;
+        Serial.print(heightMotor.setRelativeTarget(height));
+    } else
+
+    if (command == "ST") {
+        float angle = arg1.toFloat();
+        Serial.print(turnMotor.setRelativeTarget(angle));
     } else
 
     if (command == "CY") {
         leftMotor.chopOn();
         rightMotor.chopOn();
+
+        heightMotor.chopOn();
+        turnMotor.chopOn();
     } else
 
     if (command == "CN") {
         leftMotor.chopOff();
         rightMotor.chopOff();
+
+        heightMotor.chopOff();
+        turnMotor.chopOff();
     } else
 
+    if (command == "AE") {
+        Serial.print(heightMotor.endstopInactive());
+        Serial.print(" ");
+    } else
+
+    if (command == "TE") {
+        Serial.print(turnMotor.endstopInactive());
+        Serial.print(" ");
+    } else
+
+    if (command == "HA") {
+
+    } else
+
+    if (command == "HT") {
+        turnMotor.
+    } else
 
     {
         return false;

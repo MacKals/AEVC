@@ -15,6 +15,8 @@ volatile uint32_t time = 0; // in STEP_INTERRUPT_PERIOD us, ftm0_cnt_long
 bool ledValue = false;
 Controller controller;
 
+volatile bool conflictFlag = false;
+
 // Interrupt service routines
 void ftm0_isr(void) {
 
@@ -28,7 +30,10 @@ void ftm0_isr(void) {
             digitalWriteFast(LED, ledValue);
         }
 
+        if (conflictFlag) {Serial.println("BAAD");}
+        conflictFlag = true;
         controller.step();
+        conflictFlag = false;
 	}
 
     // Falling edge interrupt
@@ -92,23 +97,26 @@ int main(void) {
 
     pinMode(LED, OUTPUT);
 
+    // configure motors
     controller.disableMotors();
+    controller.configureChop();
+
 
 
     // Main execution loop
 	while (true) {
-
         if (Serial.available()) {
-            Serial.println("c");
             String a = Serial.readString();
-            Serial.print(a + ": \t");
-            if (a.length() < 2) {}//Serial.println("Command too short.");
+            if (a=="C") Serial.println("c");
             else {
+                Serial.print(a);
+                Serial.print(":\t");
                 bool understood = controller.executeCommand(a);
-                Serial.println(understood ? "Y" : "N");
+                Serial.println(understood ? "OK" : "ERR");
             }
         }
     }
+
 
 	return 0;
 }

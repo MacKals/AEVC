@@ -10,45 +10,6 @@
 #ifndef constants_h
 #define constants_h
 
-// Drivetrain
-#define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm
-#define D_MAX_VEL   1.0                     // m/s
-#define D_MAX_ACEL  0.1                     // m/s^2
-
-#define WHEELBASE_RADIUS    0.27630/2       // m
-
-// HeightMotor
-#define H_DISTANCE_PER_STEP 0.008/200.0     // m/step
-#define H_MAX_ACEL 0.2          // m/s^2
-#define H_MAX_VEL 0.1           // m/s
-
-#define H_STOP_PIN S2_2         // pin number
-#define H_RANGE 0.2             // m
-
-// TurnMotor
-
-#define T_DISTANCE_PER_STEP 1.8*0.035/0.135565   // deg/step
-#define T_MAX_ACEL 10.0         // deg/s^2
-#define T_MAX_VEL 80.0          // deg/s
-
-#define T_STOP_PIN S2_1         // pin number
-#define T_RANGE 360.0           // deg
-
-
-// Timing
-#define US_TO_CLOCK(us) ((us)*72/2)
-
-#define PERIOD 300000           // US_TO_CLOCK(1000000/120)
-#define PERIODS_PER_CLOCK 3579  // 0x100000000/(PERIOD*5) truncated
-
-#define STEP_INTERRUPT_PERIOD   100      // us
-#define MICROSECOND             1000000  // s
-#define INTERRUPT_FREQUENCY     (MICROSECOND/STEP_INTERRUPT_PERIOD)    // Hz
-#define MAX_STEP_PERIOD         0.1*INTERRUPT_FREQUENCY               // step periods
-
-#define BLINK_PERIOD 500000 //us
-
-
 
 // Teensy pinout
 
@@ -85,7 +46,7 @@
 #define M5_DIR  53
 #define M5_STEP 37
 #define M5_EN   52
-#define M5_CHOP 36
+#define M5_CHOP 35
 #define M5_TX   34
 #define M5_RX   33
 #define M5 Serial5
@@ -118,6 +79,47 @@
 #define D2_2 54
 #define D2_3 16
 #define D2_4 15
+
+
+
+// Drivetrain
+#define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm * 1/3
+#define D_MAX_VEL   0.7                     // m/s
+#define D_MAX_ACEL  0.01                    // m/s^2
+
+#define WHEELBASE_RADIUS    0.27630/2       // m
+
+// HeightMotor
+#define H_DISTANCE_PER_STEP (0.008/200.0/16.0)          // m/step
+#define H_MAX_ACEL 0.01         // m/s^2
+#define H_MAX_VEL 0.1           // m/s
+
+#define H_STOP_PIN S2_1         // pin number
+#define H_RANGE 0.15            // m
+
+// TurnMotor
+#define T_DISTANCE_PER_STEP (1.8*0.035/0.135565/16.0)   // deg/step
+#define T_MAX_ACEL 10.0          // deg/s^2
+#define T_MAX_VEL  80.0          // deg/s
+
+#define T_STOP_PIN S2_2         // pin number
+#define T_RANGE 360.0           // deg
+
+
+// Timing
+#define US_TO_CLOCK(us) ((us)*72/2)
+
+#define PERIOD 300000           // US_TO_CLOCK(1000000/120)
+#define PERIODS_PER_CLOCK 3579  // 0x100000000/(PERIOD*5) truncated
+
+#define STEP_INTERRUPT_PERIOD   100      // us
+#define MICROSECOND             1000000  // s
+#define INTERRUPT_FREQUENCY     (MICROSECOND/STEP_INTERRUPT_PERIOD)   // Hz
+#define MAX_STEP_PERIOD         (0.1*INTERRUPT_FREQUENCY)             // step periods
+
+#define BLINK_PERIOD 500000 //us
+
+
 
 
 #define MAX_UINT 0xFFFF

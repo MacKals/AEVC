@@ -80,11 +80,11 @@ public:
 
         Parameter(float dps, float ma, float mv):
             DISTANCE_PER_STEP(dps), MAX_ACCELERATION(ma), MAX_VELOCITY(mv) {
-
-                float DELTA_V = MAX_ACCELERATION/INTERRUPT_FREQUENCY; // m/s
+                const float DELTA_V = MAX_ACCELERATION/INTERRUPT_FREQUENCY; // m/s
                 DELTA_SV = DELTA_V / DISTANCE_PER_STEP;               // step/s
             }
     };
+
 
     MotionStepper(Parameter param, Pin pin, bool reverse = false):
         Stepper(pin, reverse), param(param) {};
@@ -114,8 +114,11 @@ protected:
         return abs((float) INTERRUPT_FREQUENCY / (float) currentStepVelocity / 2.0);
     }
 
-    float directionSign() {
-        return currentStepVelocity/abs(currentStepVelocity);
+    int directionSign() {
+        if (currentStepVelocity == 0.0) {
+            return (targetStepCount-currentStepCount) > 0 ? 1 : -1;
+        }
+        return currentStepVelocity > 0.0 ? 1 : -1;
     }
 };
 
@@ -140,6 +143,8 @@ public:
 
     bool endstopInactive();
     void endstopHit();
+
+    void home();
 };
 
 #endif /* stepper_hpp */

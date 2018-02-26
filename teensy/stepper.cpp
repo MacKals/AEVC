@@ -35,11 +35,11 @@ void Stepper::disable() {
 }
 
 void Stepper::chopOn() {
-    digitalWriteFast(pin.CHOP, false);
+    digitalWriteFast(pin.CHOP, true);
 }
 
 void Stepper::chopOff() {
-    digitalWriteFast(pin.CHOP, true);
+    digitalWriteFast(pin.CHOP, false);
 }
 
 
@@ -90,9 +90,9 @@ void MotionStepper::step() {
 
         Stepper::step();
         currentStepCount += directionSign();
-
-        updateStepPeriod();
     }
+
+    updateStepPeriod();
 }
 
 void MotionStepper::updateStepPeriod() {
@@ -129,7 +129,7 @@ void MotionStepper::updateStepPeriod() {
 // set target position for stepper, returns false if position is invalid
 bool EndstopStepper::setRelativeTarget(float distance) {
     const float absTarget = currentStepCount * param.DISTANCE_PER_STEP + distance;
-    if (0 < absTarget || absTarget < RANGE) {
+    if (0 < absTarget && absTarget < RANGE) {
         MotionStepper::setRelativeTarget(distance);
         return true;
     }
@@ -137,7 +137,7 @@ bool EndstopStepper::setRelativeTarget(float distance) {
 }
 
 bool EndstopStepper::setAbsoluteTarget(float distance) {
-    if (0 < distance || distance < RANGE) {
+    if (0 < distance && distance < RANGE) {
         MotionStepper::setAbsoluteTarget(distance);
         return true;
     }
@@ -150,7 +150,7 @@ void EndstopStepper::step() {
 }
 
 bool EndstopStepper::endstopInactive() {
-    if (!digitalReadFast(ENDSTOP_PIN)) return true;
+    if (digitalReadFast(ENDSTOP_PIN)) return true;
 
     //TODO: what if the endstop is depressed?
 
@@ -160,4 +160,8 @@ bool EndstopStepper::endstopInactive() {
 void EndstopStepper::endstopHit() {
     currentStepCount = 0;
     currentStepVelocity = 0;
+}
+
+void EndstopStepper::home() {
+    MotionStepper::setRelativeTarget(RANGE*param.DISTANCE_PER_STEP);
 }
