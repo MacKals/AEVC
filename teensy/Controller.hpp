@@ -13,6 +13,7 @@
 #include "core/Arduino.h"
 #include "Stepper.hpp"
 
+
 class Controller {
 private:
 
@@ -30,12 +31,11 @@ private:
     const MotionStepper::Pin tmPin = MotionStepper::Pin(M6_DIR, M6_STEP, M6_EN, M6_CHOP, M6_TX, M6_RX);
     const MotionStepper::Parameter tmParam = MotionStepper::Parameter(T_DISTANCE_PER_STEP, T_MAX_ACEL, T_MAX_VEL);
 
-
     MotionStepper rightMotor = MotionStepper(dParam, rmPin, true);
     MotionStepper leftMotor = MotionStepper(dParam, lmPin);
 
     EndstopStepper heightMotor = EndstopStepper(hmParam, hmPin, H_STOP_PIN, H_RANGE);
-    EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, true);
+    EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, QRD_THRESHOLD, true);
 
 
 public:

@@ -97,13 +97,15 @@
 #define H_STOP_PIN S2_1         // pin number
 #define H_RANGE 0.15            // m
 
+#define QRD_THRESHOLD 48
+
 // TurnMotor
 #define T_DISTANCE_PER_STEP (1.8*0.035/0.135565/16.0)   // deg/step
 #define T_MAX_ACEL 10.0          // deg/s^2
 #define T_MAX_VEL  80.0          // deg/s
 
-#define T_STOP_PIN S2_2         // pin number
-#define T_RANGE 360.0           // deg
+#define T_STOP_PIN D2_1          // pin number or 18
+#define T_RANGE 360.0            // deg
 
 
 // Timing

@@ -126,12 +126,24 @@ protected:
 class EndstopStepper : public MotionStepper {
 private:
     const uint8_t ENDSTOP_PIN;
+    const int ENDSTOP_THRESHOLD;
     const uint32_t RANGE;
 
+    bool atEndstop = false;
+
+    double average = 0.0;
+    double N = 15;
+
+    double rollingAverage (int new_sample) {
+        average -= average / N;
+        average += double (new_sample) / N;
+
+        return average;
+    }
 public:
 
-    EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, bool reverse = false):
-        MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), RANGE(range/param.DISTANCE_PER_STEP) {
+    EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, int threshold = 0, bool reverse = false):
+        MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), ENDSTOP_THRESHOLD(threshold), RANGE(range/param.DISTANCE_PER_STEP) {
             pinMode(ENDSTOP_PIN, INPUT_PULLUP);
     };
 
