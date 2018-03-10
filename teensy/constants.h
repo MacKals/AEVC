@@ -84,15 +84,15 @@
 
 // Drivetrain
 #define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm * 1/3
-#define D_MAX_VEL   0.7                     // m/s
-#define D_MAX_ACEL  0.01                    // m/s^2
+#define D_MAX_VEL   0.8                     // m/s
+#define D_MAX_ACEL  0.4                     // m/s^2
 
 #define WHEELBASE_RADIUS    0.27630/2       // m
 
 // HeightMotor
 #define H_DISTANCE_PER_STEP (0.008/200.0/16.0)          // m/step
 #define H_MAX_ACEL 0.01         // m/s^2
-#define H_MAX_VEL 0.1           // m/s
+#define H_MAX_VEL  0.1          // m/s
 
 #define H_STOP_PIN S2_1         // pin number
 #define H_RANGE 0.15            // m
@@ -120,8 +120,6 @@
 #define MAX_STEP_PERIOD         (0.1*INTERRUPT_FREQUENCY)             // step periods
 
 #define BLINK_PERIOD 500000 //us
-
-
 
 
 #define MAX_UINT 0xFFFF

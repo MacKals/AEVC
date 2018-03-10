@@ -84,6 +84,8 @@ void MotionStepper::step() {
         // No more steps to take
         if (currentStepCount == targetStepCount) {
             stepping = false;
+            Serial.print("currentStepVelocity ");
+            Serial.println(currentStepVelocity);
             currentStepVelocity = 0.0;
             return;
         }
@@ -101,16 +103,26 @@ void MotionStepper::updateStepPeriod() {
 
     if (moveSteps) {
         const double moveDistance = moveSteps * param.DISTANCE_PER_STEP;
-        const double targetAcceleration = pow(currentVelocity(), 2) / (2 * moveDistance); // v^2 = u^2 + 2as, so a = u^2/(2s)
+        const double targetAcceleration = pow(currentVelocity(), 2.0) / (2.0 * moveDistance); // v^2 = u^2 + 2as, so a = u^2/(2s)
 
         lastStepVelocity = currentStepVelocity;
+
+        Serial.print("moveSteps ");
+        Serial.print(moveSteps, 6);
+        Serial.print(" moveDistance ");
+        Serial.print(moveDistance, 6);
+        Serial.print(" targetAcceleration ");
+        Serial.print(targetAcceleration,6);
+        Serial.print("  currentVelocity ");
+        Serial.println(currentVelocity(),6);
 
         if (abs(targetAcceleration) < param.MAX_ACCELERATION) {
             if (abs(currentVelocity()) < param.MAX_VELOCITY) {
                 currentStepVelocity += param.DELTA_SV * directionSign();
             }
         } else if (abs(targetAcceleration) > param.MAX_ACCELERATION) {
-            currentStepVelocity -= param.DELTA_SV * directionSign();
+            currentStepVelocity -= abs(targetAcceleration) * 2 / INTERRUPT_FREQUENCY / param.DISTANCE_PER_STEP * directionSign();
+            //currentStepVelocity -= param.DELTA_SV * directionSign();
         }
 
         // Ensure DIR pin is set as we pass zero velocity

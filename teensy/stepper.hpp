@@ -81,7 +81,7 @@ public:
         Parameter(float dps, float ma, float mv):
             DISTANCE_PER_STEP(dps), MAX_ACCELERATION(ma), MAX_VELOCITY(mv) {
                 const float DELTA_V = MAX_ACCELERATION/INTERRUPT_FREQUENCY; // m/s
-                DELTA_SV = DELTA_V / DISTANCE_PER_STEP;               // step/s
+                DELTA_SV = DELTA_V / DISTANCE_PER_STEP;                     // step/s
             }
     };
 
