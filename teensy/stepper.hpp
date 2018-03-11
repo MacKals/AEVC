@@ -56,7 +56,6 @@ public:
 
     void chopOn();
     void chopOff();
-
 };
 
 
@@ -68,6 +67,8 @@ protected:
     int32_t stepCounter = 0; // to determine moved distance
 
     void updateStepPeriod();
+
+    double velocityTarget, accelerationTarget;
 
 public:
 
@@ -87,7 +88,10 @@ public:
 
 
     MotionStepper(Parameter param, Pin pin, bool reverse = false):
-        Stepper(pin, reverse), param(param) {};
+        Stepper(pin, reverse), param(param) {
+            setVelocityTarget();
+            setAccelerationTarget();
+        };
 
     const double currentVelocity();    // Given velocity of stepper
 
@@ -95,16 +99,22 @@ public:
     void setRelativeTarget(float distance);
     void setAbsoluteTarget(float distance);
 
-    void step();     // Should be called every interrupt period
+    void step();    // Should be called every interrupt period
 
+    void stop();    // full motion stop
+
+    // setting current motion parameters
+    // Defaults to 80% of max speed
+    void setVelocityTarget(double speed = 0.0);
+    void setAccelerationTarget(double acceleration = 0.0);
 
 protected:
     const Parameter param;
 
     bool stepping = false;
 
-    float lastStepVelocity = 0;     // steps per second
-    float currentStepVelocity = 0;  // steps per second
+    volatile float lastStepVelocity = 0;     // steps per second
+    volatile float currentStepVelocity = 0;  // steps per second
 
     /**
      * Computes the current step period.
@@ -140,6 +150,9 @@ private:
 
         return average;
     }
+
+    void (*homeCompletedFunction) (EndstopStepper*);
+
 public:
 
     EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, int threshold = 0, bool reverse = false):
@@ -156,7 +169,7 @@ public:
     bool endstopInactive();
     void endstopHit();
 
-    void home();
+    void home(void (*f) (EndstopStepper*));
 };
 
 #endif /* stepper_hpp */

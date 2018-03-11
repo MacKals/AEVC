@@ -84,8 +84,8 @@
 
 // Drivetrain
 #define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm * 1/3
-#define D_MAX_VEL   0.8                     // m/s
-#define D_MAX_ACEL  0.4                     // m/s^2
+#define D_MAX_VEL   0.80                     // m/s
+#define D_MAX_ACEL  0.10                     // m/s^2
 
 #define WHEELBASE_RADIUS    0.27630/2       // m
 

@@ -37,10 +37,14 @@ private:
     EndstopStepper heightMotor = EndstopStepper(hmParam, hmPin, H_STOP_PIN, H_RANGE);
     EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, QRD_THRESHOLD, true);
 
+    void (*homeCompletedFunction) (EndstopStepper*);
 
 public:
 
+    Controller (void (*f) (EndstopStepper*)) : homeCompletedFunction(f) {}
+
     bool stepping = false;
+    bool homing = false;
 
     void step() {
         rightMotor.step();
@@ -69,6 +73,38 @@ public:
     void configureChop() {
         heightMotor.chopOn();
         turnMotor.chopOn();
+    }
+
+    void homingDone(EndstopStepper* s) {
+        if (s == &heightMotor) {
+            heightMotor.setRelativeTarget(0.05); // take 5cm up
+        } else
+
+        if (s == &turnMotor) {
+            leftMotor.stop();
+            rightMotor.stop();
+
+            // move to face straight ahead
+            leftMotor.setRelativeTarget(1);
+            rightMotor.setRelativeTarget(1);
+            turnMotor.setRelativeTarget(180);
+        }
+    }
+
+    void homeTurnInterface() {
+
+        // set velocities so they are equal for turn and left/right
+        rightMotor.setVelocityTarget();
+        rightMotor.setAccelerationTarget();
+        leftMotor.setVelocityTarget();
+        leftMotor.setAccelerationTarget();
+
+        turnMotor.setVelocityTarget();
+        turnMotor.setAccelerationTarget();
+
+        rightMotor.setRelativeTarget(1);
+        leftMotor.setRelativeTarget(-1);
+        turnMotor.home(homeCompletedFunction);
     }
 
     bool executeCommand(String s);

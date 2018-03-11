@@ -42,6 +42,29 @@ void Stepper::chopOff() {
     digitalWriteFast(pin.CHOP, false);
 }
 
+void MotionStepper::setVelocityTarget(double speed) {
+    if (speed == 0.0) {
+        velocityTarget = param.MAX_VELOCITY * 0.8;
+    } else if (speed > param.MAX_VELOCITY || speed < 0.0) {
+        Serial.println("Speed not accepted.");
+        return;
+    }
+
+    velocityTarget = speed;
+}
+
+void MotionStepper::setAccelerationTarget(double acceleration) {
+    if (acceleration == 0.0) {
+        accelerationTarget = param.MAX_ACCELERATION * 0.8;
+    } else if (acceleration > param.MAX_ACCELERATION || acceleration < 0.0) {
+        Serial.println("Acceleration not accepted.");
+        return;
+    }
+
+    accelerationTarget = acceleration;
+}
+
+
 
 /* DrivetrainStepper */
 
@@ -84,8 +107,8 @@ void MotionStepper::step() {
         // No more steps to take
         if (currentStepCount == targetStepCount) {
             stepping = false;
-            Serial.print("currentStepVelocity ");
-            Serial.println(currentStepVelocity);
+            // Serial.print("currentStepVelocity ");
+            // Serial.println(currentStepVelocity);
             currentStepVelocity = 0.0;
             return;
         }
@@ -107,20 +130,20 @@ void MotionStepper::updateStepPeriod() {
 
         lastStepVelocity = currentStepVelocity;
 
-        Serial.print("moveSteps ");
-        Serial.print(moveSteps, 6);
-        Serial.print(" moveDistance ");
-        Serial.print(moveDistance, 6);
-        Serial.print(" targetAcceleration ");
-        Serial.print(targetAcceleration,6);
-        Serial.print("  currentVelocity ");
-        Serial.println(currentVelocity(),6);
+        // Serial.print("moveSteps ");
+        // Serial.print(moveSteps, 6);
+        // Serial.print(" moveDistance ");
+        // Serial.print(moveDistance, 6);
+        // Serial.print(" targetAcceleration ");
+        // Serial.print(targetAcceleration,6);
+        // Serial.print("  currentVelocity ");
+        // Serial.println(currentVelocity(),6);
 
-        if (abs(targetAcceleration) < param.MAX_ACCELERATION) {
-            if (abs(currentVelocity()) < param.MAX_VELOCITY) {
+        if (abs(targetAcceleration) < accelerationTarget) {
+            if (abs(currentVelocity()) < velocityTarget) {
                 currentStepVelocity += param.DELTA_SV * directionSign();
             }
-        } else if (abs(targetAcceleration) > param.MAX_ACCELERATION) {
+        } else if (abs(targetAcceleration) > accelerationTarget) {
             currentStepVelocity -= abs(targetAcceleration) * 2 / INTERRUPT_FREQUENCY / param.DISTANCE_PER_STEP * directionSign();
             //currentStepVelocity -= param.DELTA_SV * directionSign();
         }
@@ -181,14 +204,22 @@ bool EndstopStepper::endstopInactive() {
 }
 
 void EndstopStepper::endstopHit() {
+    homeCompletedFunction(this);
     Serial.println("hit ");
+
+    stop();
+}
+
+void MotionStepper::stop() {
+    stepping = false;
     currentStepCount = 0;
     currentStepVelocity = 0;
 }
 
-void EndstopStepper::home() {
-    atEndstop = false;
-    currentStepCount = RANGE/param.DISTANCE_PER_STEP;
-    Serial.println(currentStepCount);
-    MotionStepper::setRelativeTarget(0);
+void EndstopStepper::home(void (*f) (EndstopStepper*)) {
+    homeCompletedFunction = f;
+
+    currentStepCount = RANGE/param.DISTANCE_PER_STEP; // assume we are at top
+    MotionStepper::setRelativeTarget(0);              // go towards endstop
+    atEndstop = false; // keep track for button depressed for more cycles
 }

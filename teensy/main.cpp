@@ -17,6 +17,10 @@ Controller controller;
 
 volatile bool conflictFlag = false;
 
+void homingDone(EndstopStepper* s) {
+    controller.homingDone(s);
+}
+
 // Interrupt service routines
 void ftm0_isr(void) {
 

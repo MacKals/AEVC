@@ -25,6 +25,11 @@ const String Controller::popArgument(String &in) {
 
 bool Controller::executeCommand(String s) {
 
+    if (homing) {
+        Serial.print(" Homing! ");
+        return false;
+    }
+
     String command, arg1, arg2;
 
     command = popArgument(s);
@@ -97,16 +102,25 @@ bool Controller::executeCommand(String s) {
     } else
 
     if (command == "HA") {
-        heightMotor.home();
+        homing = true;
+        heightMotor.home(homeCompletedFunction);
     } else
 
     if (command == "HT") {
-        turnMotor.home();
+        homing = true;
+        homeTurnInterface();
     } else
+
+    if (command == "H") {
+        homing = true;
+        heightMotor.home(homeCompletedFunction);
+        homeTurnInterface();
+    }
 
     {
         return false;
     }
 
     return true;
+
 }
