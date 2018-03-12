@@ -155,7 +155,7 @@ public:
 
     EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, int threshold = 0, bool reverse = false):
         MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), ENDSTOP_THRESHOLD(threshold), RANGE(range/param.DISTANCE_PER_STEP) {
-            pinMode(ENDSTOP_PIN, INPUT); // TODO: make pullup
+            pinMode(ENDSTOP_PIN, INPUT_PULLUP); 
     };
 
     // set target position for stepper, returns false if position is invalid

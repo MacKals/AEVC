@@ -218,7 +218,7 @@ bool EndstopStepper::setAbsoluteTarget(float distance) {
 
 void EndstopStepper::step() {
     if (endstopInactive() || atEndstop) {
-        MotionStepper::step();
+        // MotionStepper::step();
         if (endstopInactive()) atEndstop = false;
     } else {
         endstopHit();
@@ -229,9 +229,13 @@ void EndstopStepper::step() {
 
 bool EndstopStepper::endstopInactive() {
     if (ENDSTOP_THRESHOLD) {
-        // Serial.print("An: ");
-        // Serial.println(analogRead(ENDSTOP_PIN) < ENDSTOP_THRESHOLD);
-        return rollingAverage(analogRead(ENDSTOP_PIN)) < ENDSTOP_THRESHOLD;
+        // print("An: ");
+        // print(analogRead(ENDSTOP_PIN));
+        double val = rollingAverage(analogRead(ENDSTOP_PIN)) < ENDSTOP_THRESHOLD;
+        // print("Re: ");
+        // println(val);
+
+        return val;
     }
 
     // Serial.print("Dig: ");

@@ -79,18 +79,18 @@ public:
     void homingDone(EndstopStepper* s) {
         homing = false;
 
-        if (s == &heightMotor) {
-            heightMotor.setRelativeTarget(0.05); // take 5cm up
-        } else
-
-        if (s == &turnMotor) {
-            leftMotor.stop();
-            rightMotor.stop();
-
-            // move to face straight ahead
-            turnBase(180);
-            turnMotor.setRelativeTarget(180);
-        }
+        // if (s == &heightMotor) {
+        //     heightMotor.setRelativeTarget(0.05); // take 5cm up
+        // } else
+        //
+        // if (s == &turnMotor) {
+        //     leftMotor.stop();
+        //     rightMotor.stop();
+        //
+        //     // move to face straight ahead
+        //     turnBase(180);
+        //     turnMotor.setRelativeTarget(180);
+        // }
     }
 
     void homeTurnInterface() {
