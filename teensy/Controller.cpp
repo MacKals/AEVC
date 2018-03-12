@@ -54,15 +54,16 @@ bool Controller::executeCommand(String s) {
     } else
 
     if (command == "MF") {
+        resetMotionTargets();
         float distance = arg1.toFloat()/1000.0;
         leftMotor.setRelativeTarget(distance);
         rightMotor.setRelativeTarget(distance);
     } else
 
     if (command == "S") {
-        float distance = arg1.toFloat()/180.0 * PI * WHEELBASE_RADIUS;
-        leftMotor.setRelativeTarget(-distance);
-        rightMotor.setRelativeTarget(distance);
+        resetMotionTargets();
+        float angle = arg1.toFloat();
+        turnBase(angle);
     } else
 
     if (command == "A") {
@@ -115,7 +116,7 @@ bool Controller::executeCommand(String s) {
         homing = true;
         heightMotor.home(homeCompletedFunction);
         homeTurnInterface();
-    }
+    } else
 
     {
         return false;

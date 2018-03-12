@@ -51,6 +51,9 @@ void MotionStepper::setVelocityTarget(double speed) {
     }
 
     velocityTarget = speed;
+
+    Serial.print("velocityTarget: ");
+    Serial.println(velocityTarget);
 }
 
 void MotionStepper::setAccelerationTarget(double acceleration) {
@@ -62,6 +65,9 @@ void MotionStepper::setAccelerationTarget(double acceleration) {
     }
 
     accelerationTarget = acceleration;
+
+    const float delta_v = accelerationTarget/INTERRUPT_FREQUENCY; // m/s
+    delta_stepVelocity = delta_v / param.DISTANCE_PER_STEP;       // step/s
 }
 
 
@@ -141,7 +147,7 @@ void MotionStepper::updateStepPeriod() {
 
         if (abs(targetAcceleration) < accelerationTarget) {
             if (abs(currentVelocity()) < velocityTarget) {
-                currentStepVelocity += param.DELTA_SV * directionSign();
+                currentStepVelocity += delta_stepVelocity * directionSign();
             }
         } else if (abs(targetAcceleration) > accelerationTarget) {
             currentStepVelocity -= abs(targetAcceleration) * 2 / INTERRUPT_FREQUENCY / param.DISTANCE_PER_STEP * directionSign();
@@ -206,7 +212,6 @@ bool EndstopStepper::endstopInactive() {
 void EndstopStepper::endstopHit() {
     homeCompletedFunction(this);
     Serial.println("hit ");
-
     stop();
 }
 

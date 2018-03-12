@@ -84,25 +84,27 @@
 
 // Drivetrain
 #define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm * 1/3
-#define D_MAX_VEL   0.80                     // m/s
-#define D_MAX_ACEL  0.10                     // m/s^2
+#define D_MAX_VEL   1.00                     // m/s
+#define D_MAX_ACEL  0.50                     // m/s^2
 
 #define WHEELBASE_RADIUS    0.27630/2       // m
 
 // HeightMotor
 #define H_DISTANCE_PER_STEP (0.008/200.0/16.0)          // m/step
-#define H_MAX_ACEL 0.01         // m/s^2
-#define H_MAX_VEL  0.1          // m/s
+#define H_MAX_ACEL 0.05         // m/s^2
+#define H_MAX_VEL  0.08          // m/s
 
 #define H_STOP_PIN S2_1         // pin number
 #define H_RANGE 0.15            // m
 
-#define QRD_THRESHOLD 48
+#define QRD_THRESHOLD 650
 
 // TurnMotor
-#define T_DISTANCE_PER_STEP (1.8*0.035/0.135565/16.0)   // deg/step
-#define T_MAX_ACEL 10.0          // deg/s^2
-#define T_MAX_VEL  80.0          // deg/s
+#define TURN_WHEEL_RADIUS    0.135565       // m
+
+#define T_DISTANCE_PER_STEP (1.8*0.035/TURN_WHEEL_RADIUS/16.0) // deg/step
+#define T_MAX_ACEL 10.0           // deg/s^2
+#define T_MAX_VEL  40.0          // deg/s
 
 #define T_STOP_PIN D2_1          // pin number or 18
 #define T_RANGE 360.0            // deg

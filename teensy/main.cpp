@@ -12,8 +12,10 @@ perepherals.
 
 volatile uint32_t time = 0; // in STEP_INTERRUPT_PERIOD us, ftm0_cnt_long
 
+void homingDone(EndstopStepper* s);
+
 bool ledValue = false;
-Controller controller;
+Controller controller(&homingDone);
 
 volatile bool conflictFlag = false;
 
@@ -33,7 +35,7 @@ void ftm0_isr(void) {
             ledValue = !ledValue;
             digitalWriteFast(LED, ledValue);
         }
-        if (time % INTERRUPT_FREQUENCY == 0) Serial.println(time);
+        // if (time % INTERRUPT_FREQUENCY == 0) Serial.println(time);
         if (conflictFlag) {Serial.println("BAAD");}
         conflictFlag = true;
         controller.step();

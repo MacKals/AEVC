@@ -68,7 +68,8 @@ protected:
 
     void updateStepPeriod();
 
-    double velocityTarget, accelerationTarget;
+    double velocityTarget, accelerationTarget, delta_stepVelocity;
+;
 
 public:
 
@@ -77,13 +78,10 @@ public:
         const float DISTANCE_PER_STEP;
         const float MAX_ACCELERATION;
         const float MAX_VELOCITY;
-        float DELTA_SV;
 
         Parameter(float dps, float ma, float mv):
-            DISTANCE_PER_STEP(dps), MAX_ACCELERATION(ma), MAX_VELOCITY(mv) {
-                const float DELTA_V = MAX_ACCELERATION/INTERRUPT_FREQUENCY; // m/s
-                DELTA_SV = DELTA_V / DISTANCE_PER_STEP;                     // step/s
-            }
+            DISTANCE_PER_STEP(dps), MAX_ACCELERATION(ma), MAX_VELOCITY(mv) {}
+
     };
 
 
@@ -107,6 +105,7 @@ public:
     // Defaults to 80% of max speed
     void setVelocityTarget(double speed = 0.0);
     void setAccelerationTarget(double acceleration = 0.0);
+
 
 protected:
     const Parameter param;
