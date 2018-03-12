@@ -35,7 +35,7 @@ private:
     MotionStepper leftMotor = MotionStepper(dParam, lmPin);
 
     EndstopStepper heightMotor = EndstopStepper(hmParam, hmPin, H_STOP_PIN, H_RANGE);
-    EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, QRD_THRESHOLD, true);
+    EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, QRD_THRESHOLD);
 
     void (*homeCompletedFunction) (EndstopStepper*);
 
@@ -96,11 +96,11 @@ public:
     void homeTurnInterface() {
         // set velocities so they are equal for turn and left/right
 
-        double tVelocity = T_MAX_ACEL*0.8;
-        double tAcceleration = T_MAX_VEL*0.8;
+        double tVelocity = T_MAX_VEL*0.8;
+        double tAcceleration = T_MAX_ACEL*0.8;
 
-        double dAcceleration = tAcceleration * WHEELBASE_RADIUS/TURN_WHEEL_RADIUS;
-        double dVelocity = tVelocity * WHEELBASE_RADIUS/TURN_WHEEL_RADIUS;
+        double dVelocity = tVelocity * WHEELBASE_RADIUS/TURN_WHEEL_RADIUS * PI/180.0;
+        double dAcceleration = tAcceleration * WHEELBASE_RADIUS/TURN_WHEEL_RADIUS * PI/180.0;
 
         rightMotor.setVelocityTarget(dVelocity);
         rightMotor.setAccelerationTarget(dAcceleration);

@@ -10,6 +10,7 @@ perepherals.
 #include "constants.h"
 #include "Controller.hpp"
 
+
 volatile uint32_t time = 0; // in STEP_INTERRUPT_PERIOD us, ftm0_cnt_long
 
 void homingDone(EndstopStepper* s);
@@ -35,19 +36,13 @@ void ftm0_isr(void) {
             ledValue = !ledValue;
             digitalWriteFast(LED, ledValue);
         }
-        // if (time % INTERRUPT_FREQUENCY == 0) Serial.println(time);
-        if (conflictFlag) {Serial.println("BAAD");}
+        if (time % INTERRUPT_FREQUENCY == 0) Serial.println(time);
+        if (conflictFlag) Serial.println("BAAD");
+
         conflictFlag = true;
         controller.step();
         conflictFlag = false;
 	}
-
-    // Falling edge interrupt
-	//if (FTM0_STATUS & 0x20) {
-		// Read values and prepare FTM0 for new capture
-	//	uint32_t rise = FTM0_C4V;
-	//uint32_t fall = FTM0_C5V;
-	//	FTM0_STATUS = 0;
 }
 
 int main(void) {

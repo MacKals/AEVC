@@ -112,9 +112,7 @@ protected:
 
     bool stepping = false;
 
-
-    volatile float lastStepVelocity = 0;     // steps per second
-    volatile float currentStepVelocity = 0;  // steps per second
+    volatile double currentStepVelocity = 0;  // steps per second
 
     /**
      * Computes the current step period.
@@ -157,7 +155,7 @@ public:
 
     EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, int threshold = 0, bool reverse = false):
         MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), ENDSTOP_THRESHOLD(threshold), RANGE(range/param.DISTANCE_PER_STEP) {
-            pinMode(ENDSTOP_PIN, INPUT_PULLUP);
+            pinMode(ENDSTOP_PIN, INPUT); // TODO: make pullup
     };
 
     // set target position for stepper, returns false if position is invalid
