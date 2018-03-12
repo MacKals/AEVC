@@ -65,11 +65,11 @@ protected:
     int32_t targetStepCount = 0;
 
     int32_t stepCounter = 0; // to determine moved distance
+    bool reversing = false;
 
     void updateStepPeriod();
 
     double velocityTarget, accelerationTarget, delta_stepVelocity;
-;
 
 public:
 
@@ -111,6 +111,7 @@ protected:
     const Parameter param;
 
     bool stepping = false;
+
 
     volatile float lastStepVelocity = 0;     // steps per second
     volatile float currentStepVelocity = 0;  // steps per second

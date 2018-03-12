@@ -51,9 +51,6 @@ void MotionStepper::setVelocityTarget(double speed) {
     }
 
     velocityTarget = speed;
-
-    Serial.print("velocityTarget: ");
-    Serial.println(velocityTarget);
 }
 
 void MotionStepper::setAccelerationTarget(double acceleration) {
@@ -134,8 +131,6 @@ void MotionStepper::updateStepPeriod() {
         const double moveDistance = moveSteps * param.DISTANCE_PER_STEP;
         const double targetAcceleration = pow(currentVelocity(), 2.0) / (2.0 * moveDistance); // v^2 = u^2 + 2as, so a = u^2/(2s)
 
-        lastStepVelocity = currentStepVelocity;
-
         // Serial.print("moveSteps ");
         // Serial.print(moveSteps, 6);
         // Serial.print(" moveDistance ");
@@ -154,11 +149,12 @@ void MotionStepper::updateStepPeriod() {
             //currentStepVelocity -= param.DELTA_SV * directionSign();
         }
 
-        // Ensure DIR pin is set as we pass zero velocity
-        const int floatZero = 1.0/MAX_STEP_PERIOD;
-        if (lastStepVelocity >= floatZero && currentStepVelocity < 0.0) {
+        // Set direction pin for going forward/backward
+        if (!reversing && currentStepVelocity < 0.0) {
+            reversing = true;
             backward();
-        } else if (lastStepVelocity <= floatZero && currentStepVelocity > 0.0) {
+        } else if (reversing && currentStepVelocity > 0.0) {
+            reversing = false;
             forward();
         }
     }
