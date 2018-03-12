@@ -13,16 +13,10 @@ perepherals.
 
 volatile uint32_t time = 0; // in STEP_INTERRUPT_PERIOD us, ftm0_cnt_long
 
-void homingDone(EndstopStepper* s);
-
 bool ledValue = false;
-Controller controller(&homingDone);
+Controller controller;
 
 volatile bool conflictFlag = false;
-
-void homingDone(EndstopStepper* s) {
-    controller.homingDone(s);
-}
 
 // Interrupt service routines
 void ftm0_isr(void) {

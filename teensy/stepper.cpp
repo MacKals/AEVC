@@ -9,6 +9,7 @@
 #include "Stepper.hpp"
 // 1 is logically on for motor, 0 logically off.
 
+
 template <class T>
 void print(T s) {
     Serial.print(s);
@@ -18,6 +19,8 @@ template <class T>
 void println(T s) {
     Serial.println(s);
 }
+
+
 
 /* Stepper */
 
@@ -218,11 +221,12 @@ bool EndstopStepper::setAbsoluteTarget(float distance) {
 
 void EndstopStepper::step() {
     if (endstopInactive() || atEndstop) {
-        // MotionStepper::step();
+        MotionStepper::step();
         if (endstopInactive()) atEndstop = false;
     } else {
-        endstopHit();
         atEndstop = true;
+        Serial.println(" hit ");
+        stop();
     }
 }
 
@@ -244,11 +248,6 @@ bool EndstopStepper::endstopInactive() {
     return digitalReadFast(ENDSTOP_PIN);
 }
 
-void EndstopStepper::endstopHit() {
-    homeCompletedFunction(this);
-    Serial.println("hit ");
-    stop();
-}
 
 void MotionStepper::stop() {
     stepping = false;
@@ -256,9 +255,7 @@ void MotionStepper::stop() {
     currentStepVelocity = 0;
 }
 
-void EndstopStepper::home(void (*f) (EndstopStepper*)) {
-    homeCompletedFunction = f;
-
+void EndstopStepper::home() {
     currentStepCount = RANGE/param.DISTANCE_PER_STEP; // assume we are at top
     MotionStepper::setRelativeTarget(0);              // go towards endstop
     atEndstop = false; // keep track for button depressed for more cycles

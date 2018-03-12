@@ -149,14 +149,14 @@ private:
         return average;
     }
 
-    void (*homeCompletedFunction) (EndstopStepper*);
-
 public:
 
     EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, int threshold = 0, bool reverse = false):
         MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), ENDSTOP_THRESHOLD(threshold), RANGE(range/param.DISTANCE_PER_STEP) {
-            pinMode(ENDSTOP_PIN, INPUT_PULLUP); 
+            pinMode(ENDSTOP_PIN, INPUT_PULLUP);
     };
+
+    void home();
 
     // set target position for stepper, returns false if position is invalid
     bool setRelativeTarget(float distance);
@@ -165,9 +165,10 @@ public:
     void step();     // Should be called every interrupt period
 
     bool endstopInactive();
-    void endstopHit();
+    bool endstopHit() {
+        return atEndstop;
+    }
 
-    void home(void (*f) (EndstopStepper*));
 };
 
 #endif /* stepper_hpp */

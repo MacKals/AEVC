@@ -10,6 +10,11 @@
 #ifndef constants_h
 #define constants_h
 
+template <class T>
+extern void print(T s);
+
+template <class T>
+extern void println(T s);
 
 // Teensy pinout
 
@@ -85,7 +90,7 @@
 // Drivetrain
 #define D_DISTANCE_PER_STEP 0.0005235987757 // m, 1.8deg * PI/180 * 5cm * 1/3
 #define D_MAX_VEL   1.00                     // m/s
-#define D_MAX_ACEL  0.60                     // m/s^2
+#define D_MAX_ACEL  0.10                     // m/s^2
 
 #define WHEELBASE_RADIUS    0.27630/2       // m
 

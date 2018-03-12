@@ -104,7 +104,7 @@ bool Controller::executeCommand(String s) {
 
     if (command == "HA") {
         homing = true;
-        heightMotor.home(homeCompletedFunction);
+        heightMotor.home();
     } else
 
     if (command == "HT") {
@@ -114,14 +114,23 @@ bool Controller::executeCommand(String s) {
 
     if (command == "H") {
         homing = true;
-        heightMotor.home(homeCompletedFunction);
+        heightMotor.home();
         homeTurnInterface();
     } else
+
+    if (command == "MR") {
+        rightMotor.setRelativeTarget(0.1); // move 10 cm forward
+    } else
+
+    if (command == "ML") {
+        leftMotor.setRelativeTarget(0.1); // move 10 cm forward
+    } else
+
+    Serial.printf("ase");
 
     {
         return false;
     }
 
     return true;
-
 }

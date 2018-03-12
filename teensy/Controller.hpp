@@ -37,17 +37,17 @@ private:
     EndstopStepper heightMotor = EndstopStepper(hmParam, hmPin, H_STOP_PIN, H_RANGE);
     EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, QRD_THRESHOLD);
 
-    void (*homeCompletedFunction) (EndstopStepper*);
-
-
 public:
-
-    Controller (void (*f) (EndstopStepper*)) : homeCompletedFunction(f) {}
 
     bool stepping = false;
     bool homing = false;
 
     void step() {
+        if (homing) {
+            if (heightMotor.endstopHit()) homingDoneHeightMotor();
+            if (turnMotor.endstopHit()) homingDoneTurnMotor();
+        }
+
         rightMotor.step();
         leftMotor.step();
 
@@ -76,21 +76,20 @@ public:
         turnMotor.chopOn();
     }
 
-    void homingDone(EndstopStepper* s) {
+    void homingDoneHeightMotor() {
+        homing = false;
+        heightMotor.setRelativeTarget(0.01); // take 5cm up
+    }
+
+    void homingDoneTurnMotor() {
         homing = false;
 
-        // if (s == &heightMotor) {
-        //     heightMotor.setRelativeTarget(0.05); // take 5cm up
-        // } else
-        //
-        // if (s == &turnMotor) {
-        //     leftMotor.stop();
-        //     rightMotor.stop();
-        //
-        //     // move to face straight ahead
-        //     turnBase(180);
-        //     turnMotor.setRelativeTarget(180);
-        // }
+        leftMotor.stop();
+        rightMotor.stop();
+
+        // move to face straight ahead
+        turnBase(180);
+        turnMotor.setRelativeTarget(180);
     }
 
     void homeTurnInterface() {
@@ -111,7 +110,7 @@ public:
         turnMotor.setAccelerationTarget(tAcceleration);
 
         turnBase(-360);
-        turnMotor.home(homeCompletedFunction);
+        turnMotor.home();
     }
 
     void turnBase(double angle) {
