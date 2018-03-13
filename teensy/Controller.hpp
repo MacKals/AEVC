@@ -19,8 +19,8 @@ private:
 
     // Link hardware
 
-    const MotionStepper::Pin lmPin = MotionStepper::Pin(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX);
-    const MotionStepper::Pin rmPin = MotionStepper::Pin(M3_DIR, M3_STEP, M3_EN, M3_CHOP, M3_TX, M3_RX);
+    const MotionStepper::Pin rmPin = MotionStepper::Pin(M2_DIR, M2_STEP, M2_EN, M2_CHOP, M2_TX, M2_RX);
+    const MotionStepper::Pin lmPin = MotionStepper::Pin(M3_DIR, M3_STEP, M3_EN, M3_CHOP, M3_TX, M3_RX);
 
     const MotionStepper::Parameter dParam = MotionStepper::Parameter(D_DISTANCE_PER_STEP, D_MAX_ACEL, D_MAX_VEL);
 
@@ -31,22 +31,17 @@ private:
     const MotionStepper::Pin hmPin = MotionStepper::Pin(M6_DIR, M6_STEP, M6_EN, M6_CHOP, M6_TX, M6_RX);
     const MotionStepper::Parameter tmParam = MotionStepper::Parameter(T_DISTANCE_PER_STEP, T_MAX_ACEL, T_MAX_VEL);
 
-    MotionStepper rightMotor = MotionStepper(dParam, rmPin, true);
-    MotionStepper leftMotor = MotionStepper(dParam, lmPin);
+    MotionStepper rightMotor = MotionStepper(dParam, rmPin);
+    MotionStepper leftMotor = MotionStepper(dParam, lmPin, true);
 
     EndstopStepper heightMotor = EndstopStepper(hmParam, hmPin, H_STOP_PIN, H_RANGE);
     EndstopStepper turnMotor = EndstopStepper(tmParam, tmPin, T_STOP_PIN, T_RANGE, QRD_THRESHOLD);
 
 public:
 
-    bool stepping = false;
-    bool homing = false;
-
     void step() {
-        if (homing) {
-            if (heightMotor.endstopHit()) homingDoneHeightMotor();
-            if (turnMotor.endstopHit()) homingDoneTurnMotor();
-        }
+        if (heightMotor.homingCompleted) homingDoneHeightMotor();
+        if (turnMotor.homingCompleted) homingDoneTurnMotor();
 
         rightMotor.step();
         leftMotor.step();
@@ -77,46 +72,62 @@ public:
     }
 
     void homingDoneHeightMotor() {
-        homing = false;
-        heightMotor.setRelativeTarget(0.01); // take 5cm up
+        heightMotor.homingCompleted = false;
+        heightMotor.setRelativeTarget(0.05);  // take 5cm up
     }
 
     void homingDoneTurnMotor() {
-        homing = false;
+        turnMotor.homingCompleted = false;
 
         leftMotor.stop();
         rightMotor.stop();
 
         // move to face straight ahead
-        turnBase(180);
+        turnBase(-180);
         turnMotor.setRelativeTarget(180);
     }
 
-    void homeTurnInterface() {
-        // set velocities so they are equal for turn and left/right
+    double angleForBase(double angle) {
+        return angle/180.0 * PI * WHEELBASE_RADIUS;
+    }
 
+    void syncronizeBaseBodyRotationParameters() {
+        // set velocities so they are equal for turn and left/right
         double tVelocity = T_MAX_VEL*0.8;
         double tAcceleration = T_MAX_ACEL*0.8;
 
-        double dVelocity = tVelocity * WHEELBASE_RADIUS/TURN_WHEEL_RADIUS * PI/180.0;
-        double dAcceleration = tAcceleration * WHEELBASE_RADIUS/TURN_WHEEL_RADIUS * PI/180.0;
+        double dVelocity = angleForBase(tVelocity);
+        double dAcceleration = angleForBase(tAcceleration);
+
+        turnMotor.setVelocityTarget(tVelocity);
+        turnMotor.setAccelerationTarget(tAcceleration);
 
         rightMotor.setVelocityTarget(dVelocity);
         rightMotor.setAccelerationTarget(dAcceleration);
         leftMotor.setVelocityTarget(dVelocity);
         leftMotor.setAccelerationTarget(dAcceleration);
+    }
 
-        turnMotor.setVelocityTarget(tVelocity);
-        turnMotor.setAccelerationTarget(tAcceleration);
+    void homeTurnInterface() {
+        syncronizeBaseBodyRotationParameters();
 
-        turnBase(-360);
+        turnBase(360.0);
         turnMotor.home();
     }
 
-    void turnBase(double angle) {
-        leftMotor.setRelativeTarget( -angle/180.0 * PI * WHEELBASE_RADIUS);
-        rightMotor.setRelativeTarget( angle/180.0 * PI * WHEELBASE_RADIUS);
+    void turnBaseBodyStill(double angle) {
+        syncronizeBaseBodyRotationParameters();
+
+        turnBase(angle);
+        turnMotor.setRelativeTarget(-angle);
     }
+
+    void turnBase(double angle) {
+        leftMotor.setRelativeTarget( - angleForBase(angle));
+        rightMotor.setRelativeTarget( angleForBase(angle));
+    }
+
+    bool executeCommand(String s);
 
     void resetMotionTargets() {
         rightMotor.setVelocityTarget();
@@ -124,8 +135,6 @@ public:
         leftMotor.setVelocityTarget();
         leftMotor.setAccelerationTarget();
     }
-
-    bool executeCommand(String s);
 
 protected:
     const String popArgument(String &in);

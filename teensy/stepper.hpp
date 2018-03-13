@@ -61,8 +61,8 @@ public:
 
 class MotionStepper : public Stepper {
 protected:
-    int32_t currentStepCount = 0;
-    int32_t targetStepCount = 0;
+    volatile int32_t currentStepCount = 0;
+    volatile int32_t targetStepCount = 0;
 
     int32_t stepCounter = 0; // to determine moved distance
     bool reversing = false;
@@ -110,8 +110,6 @@ public:
 protected:
     const Parameter param;
 
-    bool stepping = false;
-
     volatile double currentStepVelocity = 0;  // steps per second
 
     /**
@@ -137,8 +135,6 @@ private:
     const int ENDSTOP_THRESHOLD;
     const uint32_t RANGE;
 
-    bool atEndstop = false;
-
     double average = 0.0;
     double N = 15;
 
@@ -157,6 +153,8 @@ public:
     };
 
     void home();
+    bool homing = false;
+    bool homingCompleted = false;
 
     // set target position for stepper, returns false if position is invalid
     bool setRelativeTarget(float distance);
@@ -165,9 +163,6 @@ public:
     void step();     // Should be called every interrupt period
 
     bool endstopInactive();
-    bool endstopHit() {
-        return atEndstop;
-    }
 
 };
 

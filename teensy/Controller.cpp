@@ -25,11 +25,6 @@ const String Controller::popArgument(String &in) {
 
 bool Controller::executeCommand(String s) {
 
-    if (homing) {
-        Serial.print(" Homing! ");
-        return false;
-    }
-
     String command, arg1, arg2;
 
     command = popArgument(s);
@@ -50,6 +45,7 @@ bool Controller::executeCommand(String s) {
     } else
 
     if (command == "DI") {
+        if (heightMotor.homing || turnMotor.homing) return false;
         disableMotors();
     } else
 
@@ -67,11 +63,13 @@ bool Controller::executeCommand(String s) {
     } else
 
     if (command == "A") {
+        if (heightMotor.homing) return false;
         float height = arg1.toFloat()/1000.0;
         Serial.print(heightMotor.setRelativeTarget(height));
     } else
 
     if (command == "ST") {
+        if (turnMotor.homing) return false;
         float angle = arg1.toFloat();
         Serial.print(turnMotor.setRelativeTarget(angle));
     } else
@@ -103,17 +101,18 @@ bool Controller::executeCommand(String s) {
     } else
 
     if (command == "HA") {
-        homing = true;
+        if (heightMotor.homing) return false;
         heightMotor.home();
     } else
 
     if (command == "HT") {
-        homing = true;
+        if (turnMotor.homing) return false;
         homeTurnInterface();
     } else
 
     if (command == "H") {
-        homing = true;
+        if (heightMotor.homing) return false;
+        if (turnMotor.homing) return false;
         heightMotor.home();
         homeTurnInterface();
     } else
@@ -125,8 +124,6 @@ bool Controller::executeCommand(String s) {
     if (command == "ML") {
         leftMotor.setRelativeTarget(0.1); // move 10 cm forward
     } else
-
-    Serial.printf("ase");
 
     {
         return false;

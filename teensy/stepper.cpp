@@ -83,7 +83,6 @@ void MotionStepper::setAccelerationTarget(double acceleration) {
         accelerationTarget = acceleration;
     }
 
-
     const double delta_v = accelerationTarget/INTERRUPT_FREQUENCY; // m/s
     delta_stepVelocity = delta_v / param.DISTANCE_PER_STEP;       // step/s
 }
@@ -97,48 +96,31 @@ const double MotionStepper::currentVelocity() {
     return currentStepVelocity * param.DISTANCE_PER_STEP;
 }
 
-// // TODO: what if we allready have velity in the other direction?
-// void DrivetrainStepper::updateStepDirection() {
-//     if (currentStepCount < targetStepCount) {
-//         movingForward = true;
-//         forward();
-//     } else {
-//         movingForward = false;
-//         backward();
-//     }
-// }
-
 void MotionStepper::setRelativeTarget(float distance) {
     targetStepCount += distance / param.DISTANCE_PER_STEP;
-    stepping = true;
 }
 
 void MotionStepper::setAbsoluteTarget(float distance) {
     targetStepCount = distance / param.DISTANCE_PER_STEP;
-    stepping = true;
+}
+
+void MotionStepper::stop() {
+    currentStepVelocity = 0.0;
+    targetStepCount = currentStepCount;
 }
 
 // Should be called every interrupt period
 void MotionStepper::step() {
 
-    if (!stepping) return;
+    // No more steps to take
+    if (currentStepCount == targetStepCount) {
+        if (currentStepVelocity) currentStepVelocity = 0.0;
+        return;
+    }
 
     // step with indicated frequency
     if (stepCounter-- <= 0) {
-
         stepCounter = min(currentStepPeriod(), MAX_STEP_PERIOD);
-
-        // No more steps to take
-        if (currentStepCount == targetStepCount) {
-            stepping = false;
-
-            print("currentStepVelocity ");
-            println(currentStepVelocity);
-
-            currentStepVelocity = 0.0;
-            return;
-        }
-
         Stepper::step();
         currentStepCount += directionSign();
     }
@@ -165,7 +147,7 @@ void MotionStepper::updateStepPeriod() {
         //
         // Serial.print("  accelerationTarget ");
         // Serial.print(accelerationTarget, 4);
-        //
+
         // Serial.print("  velocityTarget ");
         // Serial.print(velocityTarget, 4);
 
@@ -186,12 +168,13 @@ void MotionStepper::updateStepPeriod() {
         }
 
         // println("");
-
         // Set direction pin for going forward/backward
-        if (!reversing && currentStepVelocity < 0.0) {
+        if (currentStepVelocity < 0.0) {
             reversing = true;
             backward();
-        } else if (reversing && currentStepVelocity > 0.0) {
+        }
+
+        if (currentStepVelocity > 0.0) {
             reversing = false;
             forward();
         }
@@ -220,43 +203,29 @@ bool EndstopStepper::setAbsoluteTarget(float distance) {
 }
 
 void EndstopStepper::step() {
-    if (endstopInactive() || atEndstop) {
-        MotionStepper::step();
-        if (endstopInactive()) atEndstop = false;
-    } else {
-        atEndstop = true;
-        Serial.println(" hit ");
+    if (homing && !endstopInactive()) {
+        currentStepCount = 0;
         stop();
+
+        homing = false;
+        homingCompleted = true;
+        println(" Homing completed.");
     }
+
+    MotionStepper::step();
 }
 
 
 bool EndstopStepper::endstopInactive() {
     if (ENDSTOP_THRESHOLD) {
-        // print("An: ");
-        // print(analogRead(ENDSTOP_PIN));
-        double val = rollingAverage(analogRead(ENDSTOP_PIN)) < ENDSTOP_THRESHOLD;
-        // print("Re: ");
-        // println(val);
-
-        return val;
+        return rollingAverage(analogRead(ENDSTOP_PIN)) < ENDSTOP_THRESHOLD;
     }
-
-    // Serial.print("Dig: ");
-    // Serial.print(digitalReadFast(ENDSTOP_PIN));
-
     return digitalReadFast(ENDSTOP_PIN);
 }
 
 
-void MotionStepper::stop() {
-    stepping = false;
-    currentStepCount = 0;
-    currentStepVelocity = 0;
-}
-
 void EndstopStepper::home() {
     currentStepCount = RANGE/param.DISTANCE_PER_STEP; // assume we are at top
-    MotionStepper::setRelativeTarget(0);              // go towards endstop
-    atEndstop = false; // keep track for button depressed for more cycles
+    MotionStepper::setAbsoluteTarget(0);              // go towards endstop
+    homing = true; // keep track for button depressed for more cycles
 }
