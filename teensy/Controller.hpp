@@ -83,8 +83,8 @@ public:
         rightMotor.stop();
 
         // move to face straight ahead
-        turnBase(-180);
-        turnMotor.setRelativeTarget(180);
+        turnBase(-T_ENDSTOP_ANGLE);
+        turnMotor.setRelativeTarget(T_ENDSTOP_ANGLE);
     }
 
     double angleForBase(double angle) {

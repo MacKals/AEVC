@@ -114,6 +114,7 @@ extern void println(T s);
 #define T_STOP_PIN D2_1          // pin number or 18
 #define T_RANGE 360.0            // deg
 
+#define T_ENDSTOP_ANGLE 180.0    // degrees
 
 // Timing
 #define US_TO_CLOCK(us) ((us)*72/2)

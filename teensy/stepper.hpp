@@ -69,7 +69,8 @@ protected:
 
     void updateStepPeriod();
 
-    double velocityTarget, accelerationTarget, delta_stepVelocity;
+    double velocityTarget, accelerationTarget;
+    double delta_stepVelocity, decelerationConstant;
 
 public:
 

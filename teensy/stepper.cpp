@@ -21,7 +21,6 @@ void println(T s) {
 }
 
 
-
 /* Stepper */
 
 void Stepper::step() {
@@ -85,6 +84,7 @@ void MotionStepper::setAccelerationTarget(double acceleration) {
 
     const double delta_v = accelerationTarget/INTERRUPT_FREQUENCY; // m/s
     delta_stepVelocity = delta_v / param.DISTANCE_PER_STEP;       // step/s
+    decelerationConstant = delta_stepVelocity * INTERRUPT_FREQUENCY;
 }
 
 
@@ -133,48 +133,26 @@ void MotionStepper::updateStepPeriod() {
     const int moveSteps = targetStepCount-currentStepCount;
 
     if (moveSteps) {
-        const double moveDistance = moveSteps * param.DISTANCE_PER_STEP;
-        const double targetAcceleration = pow(currentVelocity(), 2.0) / (2.0 * moveDistance); // v^2 = u^2 + 2as, so a = u^2/(2s)
 
-        // print("moveSteps ");
-        // Serial.print(moveSteps, 6);
-        // Serial.print(" moveDistance ");
-        // Serial.print(moveDistance, 6);
-        // // Serial.print(" targetAcceleration ");
-        // // Serial.print(targetAcceleration,6);
-        // Serial.print("  currentVelocity ");
-        // Serial.print(currentVelocity(),10);
-        //
-        // Serial.print("  accelerationTarget ");
-        // Serial.print(accelerationTarget, 4);
+        const double decelerationSteps = pow(currentStepVelocity, 2) / decelerationConstant;
 
-        // Serial.print("  velocityTarget ");
-        // Serial.print(velocityTarget, 4);
+        Serial.print(currentStepCount);
+        Serial.print(" ");
+        Serial.print(targetStepCount);
+        Serial.print(" ");
+        Serial.println(currentStepVelocity);
 
-        if (abs(targetAcceleration) < accelerationTarget) {
-            if (abs(currentVelocity()) < velocityTarget) {
-                // Serial.print("  delta_SV+ ");
-                // Serial.println(delta_stepVelocity * directionSign(), 10);
-
-                currentStepVelocity += delta_stepVelocity * directionSign();
-            }
-        } else if (abs(targetAcceleration) > accelerationTarget) {
-
-            // Serial.print("  delta_SV- ");
-            // Serial.println(abs(targetAcceleration) * 2 / INTERRUPT_FREQUENCY / param.DISTANCE_PER_STEP * directionSign(), 10);
-
-            currentStepVelocity -= abs(targetAcceleration) * 2 / INTERRUPT_FREQUENCY / param.DISTANCE_PER_STEP * directionSign();
-            //currentStepVelocity -= param.DELTA_SV * directionSign();
+        if (abs(moveSteps) <= decelerationSteps) {
+            currentStepVelocity -= delta_stepVelocity * directionSign();
+        } else if (abs(currentVelocity()) < velocityTarget) {
+            currentStepVelocity += delta_stepVelocity * directionSign();
         }
 
-        // println("");
         // Set direction pin for going forward/backward
         if (currentStepVelocity < 0.0) {
             reversing = true;
             backward();
-        }
-
-        if (currentStepVelocity > 0.0) {
+        } else if (currentStepVelocity > 0.0) {
             reversing = false;
             forward();
         }
@@ -215,14 +193,12 @@ void EndstopStepper::step() {
     MotionStepper::step();
 }
 
-
 bool EndstopStepper::endstopInactive() {
     if (ENDSTOP_THRESHOLD) {
         return rollingAverage(analogRead(ENDSTOP_PIN)) < ENDSTOP_THRESHOLD;
     }
     return digitalReadFast(ENDSTOP_PIN);
 }
-
 
 void EndstopStepper::home() {
     currentStepCount = RANGE/param.DISTANCE_PER_STEP; // assume we are at top

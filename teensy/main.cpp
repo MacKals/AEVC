@@ -30,8 +30,8 @@ void ftm0_isr(void) {
             ledValue = !ledValue;
             digitalWriteFast(LED, ledValue);
         }
-        if (time % INTERRUPT_FREQUENCY == 0) Serial.println(time);
-        if (conflictFlag) Serial.println("BAAD");
+        //if (time % INTERRUPT_FREQUENCY == 0) Serial.println(time);
+        //if (conflictFlag) Serial.println("BAAD");
 
         conflictFlag = true;
         controller.step();
