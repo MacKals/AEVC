@@ -66,6 +66,7 @@ protected:
 
     int32_t stepCounter = 0; // to determine moved distance
     bool reversing = false;
+    bool stepping = false;
 
     void updateStepPeriod();
 

@@ -97,10 +97,12 @@ const double MotionStepper::currentVelocity() {
 }
 
 void MotionStepper::setRelativeTarget(float distance) {
+    stepping = true;
     targetStepCount += distance / param.DISTANCE_PER_STEP;
 }
 
 void MotionStepper::setAbsoluteTarget(float distance) {
+    stepping = true;
     targetStepCount = distance / param.DISTANCE_PER_STEP;
 }
 
@@ -114,7 +116,12 @@ void MotionStepper::step() {
 
     // No more steps to take
     if (currentStepCount == targetStepCount) {
-        if (currentStepVelocity) currentStepVelocity = 0.0;
+        if (stepping) {
+            stepping = false;
+            currentStepVelocity = 0.0;
+
+            println("done");
+        }
         return;
     }
 
@@ -136,11 +143,11 @@ void MotionStepper::updateStepPeriod() {
 
         const double decelerationSteps = pow(currentStepVelocity, 2) / decelerationConstant;
 
-        Serial.print(currentStepCount);
-        Serial.print(" ");
-        Serial.print(targetStepCount);
-        Serial.print(" ");
-        Serial.println(currentStepVelocity);
+        // Serial.print(currentStepCount);
+        // Serial.print(" ");
+        // Serial.print(targetStepCount);
+        // Serial.print(" ");
+        // Serial.println(currentStepVelocity);
 
         if (abs(moveSteps) <= decelerationSteps) {
             currentStepVelocity -= delta_stepVelocity * directionSign();
@@ -187,7 +194,7 @@ void EndstopStepper::step() {
 
         homing = false;
         homingCompleted = true;
-        println(" Homing completed.");
+        println("homing done");
     }
 
     MotionStepper::step();

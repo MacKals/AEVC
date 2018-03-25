@@ -115,11 +115,18 @@ public:
         turnMotor.home();
     }
 
-    void turnBaseBodyStill(double angle) {
+    bool turnBaseBodyStill(double angle) {
         syncronizeBaseBodyRotationParameters();
 
+        // Do not spin if turn stepper will go out of range
+
         turnBase(angle);
-        turnMotor.setRelativeTarget(-angle);
+
+        if (turnMotor.setRelativeTarget(-angle)) {
+            return true;
+        }
+
+        return false;
     }
 
     void turnBase(double angle) {

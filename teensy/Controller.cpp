@@ -74,6 +74,12 @@ bool Controller::executeCommand(String s) {
         Serial.print(turnMotor.setRelativeTarget(angle));
     } else
 
+    if (command == "SB") {
+        if (turnMotor.homing) return false;
+        float angle = arg1.toFloat();
+        Serial.print(turnBaseBodyStill(angle));
+    } else
+
     if (command == "CY") {
         leftMotor.chopOn();
         rightMotor.chopOn();
