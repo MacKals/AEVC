@@ -1,9 +1,27 @@
+## AEVC Controller Main
+# Cordiates data-streams from user and microcontroller with sensor information
+# to determine state and actions to send.
+#
+# Structure:
+# - Two event-streams:
+#   - user input
+#   - teensy serial
+# - Events placed in priority queue
+#   - user events have higher priority
+#   - statemachine may block events with output
+# - Cordinator in main
+#   - handles event-streams (places all input in queue)
+#   - pops events from queue and sends to state machine
 
+from enum import Enum, unique
 import time
-import positionFromImage as pos
-
-import picamera
 import serial
+
+
+import positionFromImage as pos
+from NonBlockingConsole import NonBlockingConsole as nbc
+
+#import picamera
 
 imageName = '/tmp/result.bmp'
 
@@ -48,81 +66,99 @@ def send(letter, num):
 
 
 # startup sequence
+def initializeSteppers():
+    time.sleep(3)
+    port.write('EN')
+    time.sleep(1)
+    port.write('H')
+    time.sleep(3)
 
-print 'Sarted'
+    # TODO: get stepper done confirmation before exiting
 
-time.sleep(3)
-
-port.write('EN')
-
-time.sleep(1)
-
-port.write('H')
-time.sleep(3)
 
 while port.readline != "homing done":
     time.sleep(0.5)
 
 previousState = state
 
-while True:
+@unique
+class State(Enum):
+    INITIALIZING = 0
 
-    if port.inWaiting:
-        message = port.readline
-        if message == "done":
-            expectedDoneMessages -= 1
+    MANUAL = 1
 
-    time.sleep(0.5)
+    IDLE = 0
+    DETECTING = 1
+    CENTERING = 2
+    APPROACHING = 3
+    CONNECTING = 4
+    CONNECTED = 5
+    DISCONNECTING = 6
+    RETURNING_TO_ORIGIN = 7
+    GO_TO_RANDOM_POSITION = 8
 
-    if previousState != state:
-        print(state)
-        previousState = state
+s = State.INITIALIZING
 
-    if expectedDoneMessages <= 0:
+print s
 
-        if state == "detecting":
-            if pos.posFromImage(imageName):
-                state = "center_phi"
-        
-        takePicture()
-        x, y, z, phi = pos.posFromImage(imageName)
-
-        if state == "center_phi":
-            if (abs(phi) > phiErrorLimit):
-                send('S', phi)
-            else:
-                state = "center_z"
-
-        elif state == "center_z":
-            if (abs(z) > zError):
-                send('A', -z)
-            else:
-                state = "approximate_y"
-
-        elif state == "approximate_y":
-            if (abs(y) > yError):
-                if (y > 500):
-                    send('MF', y-500)
-
-        elif state == "center_x":
-            if (abs(x) > xError):
-                print("yeah!")
-            else:
-                state = "checkPosition"
-
-        elif state == "checkPosition":
-            if abs(phi) > phiErrorLimit or abs(z) > zError or abs(y) > yError or abs(x) > xError:
-                state = "center_phi"
-            else:
-                state = "connect"
-
-        elif state == "connect":
-            send('MF', y-250)
-            state = "charging"
-
-        elif state == "charging":
-            time.sleep(10)
-            state = "return"
-
-        elif state == "return":
-            send('MF', -1000)
+# while True:
+#
+#     if port.inWaiting:
+#         message = port.readline
+#         if message == "done":
+#             expectedDoneMessages -= 1
+#
+#     time.sleep(0.5)
+#
+#     if previousState != state:
+#         print(state)
+#         previousState = state
+#
+#     if expectedDoneMessages <= 0:
+#
+#         if state == "detecting":
+#             if pos.posFromImage(imageName):
+#                 state = "center_phi"
+#
+#         takePicture()
+#         x, y, z, phi = pos.posFromImage(imageName)
+#
+#         if state == "center_phi":
+#             if (abs(phi) > phiErrorLimit):
+#                 send('S', phi)
+#             else:
+#                 state = "center_z"
+#
+#         elif state == "center_z":
+#             if (abs(z) > zError):
+#                 send('A', -z)
+#             else:
+#                 state = "approximate_y"
+#
+#         elif state == "approximate_y":
+#             if (abs(y) > yError):
+#                 if (y > 500):
+#                     send('MF', y-500)
+#
+#         elif state == "center_x":
+#             if (abs(x) > xError):
+#                 print("yeah!")
+#             else:
+#                 state = "checkPosition"
+#
+#         elif state == "checkPosition":
+#             if abs(phi) > phiErrorLimit or abs(z) > zError or abs(y) > yError or abs(x) > xError:
+#                 state = "center_phi"
+#             else:
+#                 state = "connect"
+#
+#         elif state == "connect":
+#             send('MF', y-250)
+#             state = "charging"
+#
+#         elif state == "charging":
+#             time.sleep(10)
+#             state = "return"
+#
+#         elif state == "return":
+#             send('MF', -1000)
