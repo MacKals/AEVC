@@ -15,7 +15,6 @@
 
 from enum import Enum, unique
 import time
-import serial
 
 
 import positionFromImage as pos
@@ -83,19 +82,22 @@ previousState = state
 
 @unique
 class State(Enum):
+
     INITIALIZING = 0
+
+    IDLE = 2
 
     MANUAL = 1
 
-    IDLE = 0
-    DETECTING = 1
-    CENTERING = 2
-    APPROACHING = 3
-    CONNECTING = 4
-    CONNECTED = 5
-    DISCONNECTING = 6
-    RETURNING_TO_ORIGIN = 7
-    GO_TO_RANDOM_POSITION = 8
+    # Autonomus
+    DETECTING = 3
+    CENTERING = 4
+    APPROACHING = 5
+    CONNECTING = 6
+    CONNECTED = 7
+    DISCONNECTING = 8
+    RETURNING_TO_ORIGIN = 9
+    GO_TO_RANDOM_POSITION = 10
 
 s = State.INITIALIZING
 

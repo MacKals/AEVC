@@ -143,6 +143,10 @@ public:
         leftMotor.setAccelerationTarget();
     }
 
+    void moveAroundPointAtRadius(double angle) {
+
+    }
+
 protected:
     const String popArgument(String &in);
 

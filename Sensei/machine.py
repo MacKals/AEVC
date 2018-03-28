@@ -1,5 +1,4 @@
-from aevc_states import Initialize
-
+import states as s
 
 class AEVC(object):
     """
@@ -8,12 +7,21 @@ class AEVC(object):
     """
 
     def __init__(self):
-        """ Initialize the components. """
+        self.state = Initialize()  # Start with initialization state
 
-        # Start with a initialization
-        self.state = Initialize()
+    def teensyEvent(self, event):
 
-    def on_event(self, event):
+        if event in returnMessages:
+            s.returnMessages.remove(event)
+        else:
+            print "error, tried to remove " + str(event) + " from " + str(returnMessages)
 
+        if s.returnMessages.empty():
+            print state + ": " + event
+            self.state = self.state.on_event(event)
+            s.returnMessages.extend(rm)
+
+
+
+    def controllerEvent(self, event):
         # The next state will be the result of the on_event function.
-        self.state = self.state.on_event(event)

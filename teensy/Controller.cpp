@@ -131,6 +131,13 @@ bool Controller::executeCommand(String s) {
         leftMotor.setRelativeTarget(0.1); // move 10 cm forward
     } else
 
+    if (command == "Q") {
+        rightMotor.stop();
+        leftMotor.stop();
+        heightMotor.stop();
+        turnMotor.stop();
+    } else
+
     {
         return false;
     }
