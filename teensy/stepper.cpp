@@ -120,7 +120,7 @@ void MotionStepper::step() {
             stepping = false;
             currentStepVelocity = 0.0;
 
-            println("done");
+            println("d");
         }
         return;
     }
@@ -194,7 +194,7 @@ void EndstopStepper::step() {
 
         homing = false;
         homingCompleted = true;
-        println("homing done");
+        println("h");
     }
 
     MotionStepper::step();

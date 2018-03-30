@@ -136,7 +136,7 @@ private:
     const uint8_t ENDSTOP_PIN;
     const int ENDSTOP_THRESHOLD;
     const uint32_t RANGE;
-    //const 
+    //const
 
     double average = 0.0;
     double N = 15;
@@ -150,7 +150,7 @@ private:
 
 public:
 
-    EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, float zero, int threshold = 0, bool reverse = false):
+    EndstopStepper(Parameter param, Pin pin, int endstopPin, float range, int threshold = 0, bool reverse = false):
         MotionStepper(param, pin, reverse), ENDSTOP_PIN(endstopPin), ENDSTOP_THRESHOLD(threshold), RANGE(range/param.DISTANCE_PER_STEP) {
             pinMode(ENDSTOP_PIN, INPUT_PULLUP);
     };

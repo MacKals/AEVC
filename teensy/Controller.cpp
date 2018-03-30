@@ -65,45 +65,19 @@ bool Controller::executeCommand(String s) {
     if (command == "A") {
         if (heightMotor.homing) return false;
         float height = arg1.toFloat()/1000.0;
-        Serial.print(heightMotor.setRelativeTarget(height));
+        return heightMotor.setRelativeTarget(height);
     } else
 
     if (command == "ST") {
         if (turnMotor.homing) return false;
         float angle = arg1.toFloat();
-        Serial.print(turnMotor.setRelativeTarget(angle));
+        return turnMotor.setRelativeTarget(angle);
     } else
 
     if (command == "SB") {
         if (turnMotor.homing) return false;
         float angle = arg1.toFloat();
-        Serial.print(turnBaseBodyStill(angle));
-    } else
-
-    if (command == "CY") {
-        leftMotor.chopOn();
-        rightMotor.chopOn();
-
-        heightMotor.chopOn();
-        turnMotor.chopOn();
-    } else
-
-    if (command == "CN") {
-        leftMotor.chopOff();
-        rightMotor.chopOff();
-
-        heightMotor.chopOff();
-        turnMotor.chopOff();
-    } else
-
-    if (command == "AE") {
-        Serial.print(heightMotor.endstopInactive());
-        Serial.print(" ");
-    } else
-
-    if (command == "TE") {
-        Serial.print(turnMotor.endstopInactive());
-        Serial.print(" ");
+        return turnBaseBodyStill(angle);
     } else
 
     if (command == "HA") {
@@ -123,15 +97,8 @@ bool Controller::executeCommand(String s) {
         homeTurnInterface();
     } else
 
-    if (command == "MR") {
-        rightMotor.setRelativeTarget(0.1); // move 10 cm forward
-    } else
-
-    if (command == "ML") {
-        leftMotor.setRelativeTarget(0.1); // move 10 cm forward
-    } else
-
     if (command == "Q") {
+        disableMotors();
         rightMotor.stop();
         leftMotor.stop();
         heightMotor.stop();

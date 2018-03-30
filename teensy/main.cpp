@@ -101,13 +101,8 @@ int main(void) {
 	while (true) {
         if (Serial.available()) {
             String a = Serial.readString();
-            if (a=="C") Serial.println("c");
-            else {
-                Serial.print(a);
-                Serial.print(":\t");
-                bool understood = controller.executeCommand(a);
-                Serial.println(understood ? "OK" : "ERR");
-            }
+            bool understood = controller.executeCommand(a);
+            Serial.println(understood ? "K" : "E");
         }
     }
 
