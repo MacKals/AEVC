@@ -39,6 +39,7 @@ void ftm0_isr(void) {
 	}
 }
 
+
 int main(void) {
     Serial.begin(9600);
 	delay(1000);
@@ -96,13 +97,12 @@ int main(void) {
     controller.disableMotors();
     controller.configureChop();
 
-
     // Main execution loop
 	while (true) {
         if (Serial.available()) {
-            String a = Serial.readString();
+            String a = Serial.readStringUntil(',');
             bool understood = controller.executeCommand(a);
-            Serial.println(understood ? "K" : "E");
+            Serial.println(understood ? "k" : "e");
         }
     }
 

@@ -68,6 +68,8 @@ protected:
     bool reversing = false;
     bool stepping = false;
 
+    bool velocityControl = false;
+
     void updateStepPeriod();
 
     double velocityTarget, accelerationTarget;
@@ -107,6 +109,12 @@ public:
     // Defaults to 80% of max speed
     void setVelocityTarget(double speed = 0.0);
     void setAccelerationTarget(double acceleration = 0.0);
+
+    void setVelocityControl(double fractionalSpeed) {
+        currentStepVelocity = param.MAX_VELOCITY / param.DISTANCE_PER_STEP * fractionalSpeed;
+        stepping = true;
+        velocityControl = true;
+    }
 
 
 protected:

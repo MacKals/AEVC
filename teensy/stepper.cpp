@@ -62,7 +62,6 @@ void MotionStepper::setVelocityTarget(double speed) {
         println(param.MAX_VELOCITY);
         return;
     } else {
-
         velocityTarget = speed;
     }
 
@@ -78,7 +77,6 @@ void MotionStepper::setAccelerationTarget(double acceleration) {
         println(param.MAX_ACCELERATION);
         return;
     } else {
-
         accelerationTarget = acceleration;
     }
 
@@ -86,7 +84,6 @@ void MotionStepper::setAccelerationTarget(double acceleration) {
     delta_stepVelocity = delta_v / param.DISTANCE_PER_STEP;       // step/s
     decelerationConstant = delta_stepVelocity * INTERRUPT_FREQUENCY;
 }
-
 
 
 /* DrivetrainStepper */
@@ -97,16 +94,20 @@ const double MotionStepper::currentVelocity() {
 }
 
 void MotionStepper::setRelativeTarget(float distance) {
+    velocityControl = false;
     stepping = true;
     targetStepCount += distance / param.DISTANCE_PER_STEP;
 }
 
 void MotionStepper::setAbsoluteTarget(float distance) {
+    velocityControl = false;
     stepping = true;
     targetStepCount = distance / param.DISTANCE_PER_STEP;
 }
 
 void MotionStepper::stop() {
+    velocityControl = false;
+    stepping = false;
     currentStepVelocity = 0.0;
     targetStepCount = currentStepCount;
 }
@@ -115,7 +116,7 @@ void MotionStepper::stop() {
 void MotionStepper::step() {
 
     // No more steps to take
-    if (currentStepCount == targetStepCount) {
+    if (currentStepCount == targetStepCount && !velocityControl) {
         if (stepping) {
             stepping = false;
             currentStepVelocity = 0.0;
@@ -130,10 +131,30 @@ void MotionStepper::step() {
         stepCounter = min(currentStepPeriod(), MAX_STEP_PERIOD);
         Stepper::step();
         currentStepCount += directionSign();
+        if (velocityControl) currentStepVelocity *= 0.996;
     }
 
-    updateStepPeriod();
+    if (velocityControl) {
+        targetStepCount = currentStepCount;
+        if (abs(currentStepVelocity) < 10) {
+            // Stop if we are going to slow to avoid drift
+            currentStepVelocity = 0;
+            stepping = false;
+            velocityControl = false;
+        }
+    }
+    else updateStepPeriod();
+
+    // Update direction of travel
+    if (currentStepVelocity < 0.0) {
+        reversing = true;
+        backward();
+    } else if (currentStepVelocity > 0.0) {
+        reversing = false;
+        forward();
+    }
 }
+
 
 void MotionStepper::updateStepPeriod() {
 
@@ -153,15 +174,6 @@ void MotionStepper::updateStepPeriod() {
             currentStepVelocity -= delta_stepVelocity * directionSign();
         } else if (abs(currentVelocity()) < velocityTarget) {
             currentStepVelocity += delta_stepVelocity * directionSign();
-        }
-
-        // Set direction pin for going forward/backward
-        if (currentStepVelocity < 0.0) {
-            reversing = true;
-            backward();
-        } else if (currentStepVelocity > 0.0) {
-            reversing = false;
-            forward();
         }
     }
 }
@@ -188,16 +200,26 @@ bool EndstopStepper::setAbsoluteTarget(float distance) {
 }
 
 void EndstopStepper::step() {
-    if (homing && !endstopInactive()) {
-        currentStepCount = 0;
+
+    bool aboveMin = 0 < currentStepCount || directionSign() == 1;
+    bool belowMax = currentStepCount < (int) RANGE || directionSign() == -1;
+
+    if (!velocityControl || (aboveMin && belowMax)) {
+
+        if (homing && !endstopInactive()) {
+            currentStepCount = 0;
+            stop();
+
+            homing = false;
+            homingCompleted = true;
+            println("h"); // homing completed
+        }
+
+        MotionStepper::step();
+    } else {
         stop();
-
-        homing = false;
-        homingCompleted = true;
-        println("h");
+        println("blocked");
     }
-
-    MotionStepper::step();
 }
 
 bool EndstopStepper::endstopInactive() {
@@ -208,7 +230,7 @@ bool EndstopStepper::endstopInactive() {
 }
 
 void EndstopStepper::home() {
-    currentStepCount = RANGE/param.DISTANCE_PER_STEP; // assume we are at top
+    currentStepCount = RANGE; // assume we are at top
     MotionStepper::setAbsoluteTarget(0);              // go towards endstop
     homing = true; // keep track for button depressed for more cycles
 }

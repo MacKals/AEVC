@@ -23,22 +23,15 @@ const String Controller::popArgument(String &in) {
     return ret;
 }
 
-bool Controller::executeCommand(String s) {
+bool Controller::executeCommand(String& s) {
 
-    String command, arg1, arg2;
+    String command, arg1, arg2, arg3, arg4;
 
     command = popArgument(s);
-    // Serial.print(s);
-    // Serial.print("; ");
     arg1 = popArgument(s);
     arg2 = popArgument(s);
-
-    // Serial.print(command);
-    // Serial.print(", ");
-    // Serial.print(arg1);
-    // Serial.print(", ");
-    // Serial.print(arg2);
-    // Serial.print("; ");
+    arg3 = popArgument(s);
+    arg4 = popArgument(s);
 
     if (command == "EN") {
         enableMotors();
@@ -103,6 +96,13 @@ bool Controller::executeCommand(String s) {
         leftMotor.stop();
         heightMotor.stop();
         turnMotor.stop();
+    } else
+
+    if (command == "V") {
+        leftMotor.setVelocityControl(arg1.toFloat());
+        rightMotor.setVelocityControl(arg2.toFloat());
+        turnMotor.setVelocityControl(arg3.toFloat());
+        heightMotor.setVelocityControl(arg4.toFloat());
     } else
 
     {

@@ -134,7 +134,7 @@ public:
         rightMotor.setRelativeTarget( angleForBase(angle));
     }
 
-    bool executeCommand(String s);
+    bool executeCommand(String& s);
 
     void resetMotionTargets() {
         rightMotor.setVelocityTarget();
@@ -144,7 +144,6 @@ public:
     }
 
     void moveAroundPointAtRadius(double angle) {
-
     }
 
 protected:

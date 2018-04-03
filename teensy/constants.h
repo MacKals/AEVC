@@ -108,7 +108,7 @@ extern void println(T s);
 #define TURN_WHEEL_RADIUS    0.135565       // m
 
 #define T_DISTANCE_PER_STEP (1.8*0.035/TURN_WHEEL_RADIUS/16.0) // deg/step
-#define T_MAX_ACEL 30.0           // deg/s^2
+#define T_MAX_ACEL 30.0          // deg/s^2
 #define T_MAX_VEL  50.0          // deg/s
 
 #define T_STOP_PIN D2_1          // pin number or 18
